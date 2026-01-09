@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../store/slices/userSlice';
 import { Button, Input } from '../components/ui';
 import logoImage from '../assets/images/jinnar-viral-logo.png';
 
@@ -13,6 +15,9 @@ const SignUp = () => {
         agreeToTerms: false,
     });
     const [errors, setErrors] = useState({});
+
+    const dispatch = useDispatch();
+    const { loading, error: authError } = useSelector((state) => state.user);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -60,7 +65,7 @@ const SignUp = () => {
         return newErrors;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const newErrors = validate();
@@ -69,9 +74,22 @@ const SignUp = () => {
             return;
         }
 
-        // TODO: Implement actual sign-up logic with Redux
-        console.log('Sign up with:', formData);
-        navigate('/dashboard');
+        const payload = {
+            identifier: formData.email,
+            name: formData.fullName,
+            password: formData.password,
+            role: 'buyer'
+        };
+
+        try {
+            await dispatch(registerUser(payload)).unwrap();
+            // Navigate to verification page with identifier
+            navigate('/verify', { state: { identifier: formData.email } });
+        } catch (err) {
+            console.error('Registration failed:', err);
+            // The error from rejectWithValue is already in authError, but we can also set local error if needed
+            // or just rely on the UI displaying authError
+        }
     };
 
     return (
@@ -94,6 +112,11 @@ const SignUp = () => {
 
                 {/* Sign Up Form */}
                 <div className="bg-white rounded-2xl shadow-xl p-8">
+                    {authError && (
+                        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                            {authError}
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <Input
                             label="Full Name"
@@ -165,8 +188,9 @@ const SignUp = () => {
                             variant="primary"
                             size="lg"
                             className="w-full"
+                            disabled={loading}
                         >
-                            Create Account
+                            {loading ? 'Creating Account...' : 'Create Account'}
                         </Button>
                     </form>
 

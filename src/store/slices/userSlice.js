@@ -10,11 +10,25 @@ const initialState = {
 
 export const loginUser = createAsyncThunk(
   'user/login',
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, { dispatch, rejectWithValue }) => {
     try {
       const response = await client.post('/auth/login', credentials);
-      localStorage.setItem('token', response.data.token);
-      return response.data.user;
+      const { token, user } = response.data;
+
+      if (token) {
+        localStorage.setItem('token', token);
+      }
+
+      if (user) {
+        return user;
+      } else {
+        // If user is not returned, fetch it
+        const userAction = await dispatch(fetchCurrentUser());
+        if (fetchCurrentUser.fulfilled.match(userAction)) {
+          return userAction.payload;
+        }
+        return null;
+      }
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -26,8 +40,10 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await client.post('/auth/register', userData);
-      localStorage.setItem('token', response.data.token);
-      return response.data.user;
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+      return response.data.user || response.data; // Return user or full data if user object is missing
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -40,6 +56,56 @@ export const fetchCurrentUser = createAsyncThunk(
     try {
       const response = await client.get('/auth/me');
       return response.data.user;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+export const verifyUser = createAsyncThunk(
+  'user/verify',
+  async (verificationData, { rejectWithValue }) => {
+    try {
+      // verificationData: { identifier, code }
+      const response = await client.post('/auth/verify', verificationData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+export const resendCode = createAsyncThunk(
+  'user/resendCode',
+  async (identifier, { rejectWithValue }) => {
+    try {
+      const response = await client.post('/auth/resend-code', { identifier });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+export const forgotPassword = createAsyncThunk(
+  'user/forgotPassword',
+  async (identifier, { rejectWithValue }) => {
+    try {
+      const response = await client.post('/auth/forgot-password', { identifier });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  'user/resetPassword',
+  async (resetData, { rejectWithValue }) => {
+    try {
+      // resetData: { identifier, code, newPassword }
+      const response = await client.post('/auth/reset-password', resetData);
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -95,6 +161,56 @@ const userSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         localStorage.removeItem('token');
+      })
+      // Verify User
+      .addCase(verifyUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyUser.fulfilled, (state) => {
+        state.loading = false;
+        // Verification successful, user can now login or is considered verified
+      })
+      .addCase(verifyUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Resend Code
+      .addCase(resendCode.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resendCode.fulfilled, (state) => {
+        state.loading = false;
+        // Code resent successfully
+      })
+      .addCase(resendCode.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Forgot Password
+      .addCase(forgotPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Reset Password
+      .addCase(resetPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

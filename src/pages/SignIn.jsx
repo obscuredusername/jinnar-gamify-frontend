@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../store/slices/userSlice';
 import { Button, Input } from '../components/ui';
 import logoImage from '../assets/images/jinnar-viral-logo.png';
 
@@ -10,6 +12,9 @@ const SignIn = () => {
         password: '',
     });
     const [errors, setErrors] = useState({});
+
+    const dispatch = useDispatch();
+    const { loading, error: authError } = useSelector((state) => state.user);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -41,7 +46,7 @@ const SignIn = () => {
         return newErrors;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const newErrors = validate();
@@ -50,9 +55,15 @@ const SignIn = () => {
             return;
         }
 
-        // TODO: Implement actual sign-in logic with Redux
-        console.log('Sign in with:', formData);
-        navigate('/dashboard');
+        try {
+            await dispatch(loginUser({
+                identifier: formData.email,
+                password: formData.password
+            })).unwrap();
+            navigate('/dashboard');
+        } catch (err) {
+            console.error('Login failed:', err);
+        }
     };
 
     return (
@@ -75,6 +86,11 @@ const SignIn = () => {
 
                 {/* Sign In Form */}
                 <div className="bg-white rounded-2xl shadow-xl p-8">
+                    {authError && (
+                        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                            {authError}
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <Input
                             label="Email Address"
@@ -117,8 +133,9 @@ const SignIn = () => {
                             variant="primary"
                             size="lg"
                             className="w-full"
+                            disabled={loading}
                         >
-                            Sign In
+                            {loading ? 'Signing In...' : 'Sign In'}
                         </Button>
                     </form>
 

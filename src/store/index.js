@@ -7,7 +7,7 @@ export const store = configureStore({
     user: userReducer,
     challenges: challengeReducer,
   },
-  devTools: process.env.NODE_ENV !== 'production',
+  devTools: import.meta.env.DEV,
 });
 
 export default store;
