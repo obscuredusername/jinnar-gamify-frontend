@@ -56,10 +56,11 @@ const SignIn = () => {
         }
 
         try {
-            await dispatch(loginUser({
+            const result = await dispatch(loginUser({
                 identifier: formData.email,
                 password: formData.password
             })).unwrap();
+            console.log('Login Dispatch Result:', result);
             navigate('/dashboard');
         } catch (err) {
             console.error('Login failed:', err);

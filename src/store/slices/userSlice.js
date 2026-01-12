@@ -12,7 +12,11 @@ export const loginUser = createAsyncThunk(
   'user/login',
   async (credentials, { dispatch, rejectWithValue }) => {
     try {
+      console.log('Attempting login with credentials:', credentials);
       const response = await client.post('/auth/login', credentials);
+      console.log('Login API Response:', response);
+      console.log('Login API Response Data:', response.data);
+
       const { token, user } = response.data;
 
       if (token) {
@@ -30,6 +34,8 @@ export const loginUser = createAsyncThunk(
         return null;
       }
     } catch (error) {
+      console.error('Login API Error:', error);
+      console.error('Login API Error Response:', error.response);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
