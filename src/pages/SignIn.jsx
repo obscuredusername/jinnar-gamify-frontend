@@ -48,9 +48,11 @@ const SignIn = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('SignIn: handleSubmit triggered');
 
         const newErrors = validate();
         if (Object.keys(newErrors).length > 0) {
+            console.log('SignIn: Validation failed', newErrors);
             setErrors(newErrors);
             return;
         }
