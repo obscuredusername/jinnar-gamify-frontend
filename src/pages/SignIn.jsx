@@ -58,24 +58,61 @@ const SignIn = () => {
         }
 
         try {
+            console.log('🚀 Dispatching login action...');
             const result = await dispatch(loginUser({
                 identifier: formData.email,
                 password: formData.password
             })).unwrap();
 
-            console.log('Login Dispatch Result:', result);
+            console.log('✅ Login Dispatch Result:', result);
 
-            // Strict check: Only navigate if we have valid user data
-            if (result && typeof result === 'object') {
-                console.log('Login successful, navigating to dashboard');
+            // STRICT VALIDATION: Must have token AND valid user data
+            const token = localStorage.getItem('token');
+            const hasValidToken = token && token.length > 0;
+            const hasValidUser = result &&
+                typeof result === 'object' &&
+                result.id &&
+                result.email;
+
+            console.log('🔐 Token Check:', {
+                hasToken: hasValidToken,
+                tokenLength: token?.length || 0
+            });
+            console.log('👤 User Check:', {
+                hasValidUser,
+                userId: result?.id,
+                userEmail: result?.email
+            });
+
+            if (hasValidToken && hasValidUser) {
+                console.log('✅ Login successful - Token and user data validated');
                 navigate('/dashboard');
             } else {
-                console.error('Login failed: Invalid user data received');
-                setErrors({ email: 'Login failed. Please try again.' });
+                console.error('❌ Login validation failed:', {
+                    hasValidToken,
+                    hasValidUser,
+                    result
+                });
+
+                // Clear any invalid token
+                localStorage.removeItem('token');
+
+                setErrors({
+                    email: 'Authentication failed. Please check your credentials and try again.'
+                });
             }
         } catch (err) {
-            console.error('Login failed:', err);
-            // Error is already displayed via authError from Redux state
+            console.error('❌ Login failed with error:', err);
+
+            // Make sure token is cleared on error
+            localStorage.removeItem('token');
+
+            // Set a user-friendly error message
+            const errorMessage = typeof err === 'string'
+                ? err
+                : err?.message || 'Login failed. Please try again.';
+
+            setErrors({ email: errorMessage });
         }
     };
 

@@ -67,9 +67,11 @@ const SignUp = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('SignUp: handleSubmit triggered');
 
         const newErrors = validate();
         if (Object.keys(newErrors).length > 0) {
+            console.log('SignUp: Validation failed', newErrors);
             setErrors(newErrors);
             return;
         }
@@ -82,21 +84,58 @@ const SignUp = () => {
         };
 
         try {
+            console.log('🚀 Dispatching registration action...');
             const result = await dispatch(registerUser(payload)).unwrap();
 
-            console.log('Registration Dispatch Result:', result);
+            console.log('✅ Registration Dispatch Result:', result);
 
-            // Strict check: Only navigate if we have valid user data
-            if (result && typeof result === 'object') {
-                console.log('Registration successful, navigating to verify');
+            // STRICT VALIDATION: Must have token AND valid user data
+            const token = localStorage.getItem('token');
+            const hasValidToken = token && token.length > 0;
+            const hasValidUser = result &&
+                typeof result === 'object' &&
+                result.id &&
+                result.email;
+
+            console.log('🔐 Token Check:', {
+                hasToken: hasValidToken,
+                tokenLength: token?.length || 0
+            });
+            console.log('👤 User Check:', {
+                hasValidUser,
+                userId: result?.id,
+                userEmail: result?.email
+            });
+
+            if (hasValidToken && hasValidUser) {
+                console.log('✅ Registration successful - Token and user data validated');
                 navigate('/verify', { state: { identifier: formData.email } });
             } else {
-                console.error('Registration failed: Invalid user data received');
-                setErrors({ email: 'Registration failed. Please try again.' });
+                console.error('❌ Registration validation failed:', {
+                    hasValidToken,
+                    hasValidUser,
+                    result
+                });
+
+                // Clear any invalid token
+                localStorage.removeItem('token');
+
+                setErrors({
+                    email: 'Registration failed. Please try again.'
+                });
             }
         } catch (err) {
-            console.error('Registration failed:', err);
-            // The error from rejectWithValue is already in authError
+            console.error('❌ Registration failed with error:', err);
+
+            // Make sure token is cleared on error
+            localStorage.removeItem('token');
+
+            // Set a user-friendly error message
+            const errorMessage = typeof err === 'string'
+                ? err
+                : err?.message || 'Registration failed. Please try again.';
+
+            setErrors({ email: errorMessage });
         }
     };
 

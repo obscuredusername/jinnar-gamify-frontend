@@ -7,6 +7,7 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import FAQ from './pages/FAQ';
 import Rules from './pages/Rules';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -18,7 +19,17 @@ function App() {
         <Route path="/verify" element={<VerifyAccount />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Protected Routes - Require Authentication */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/faq" element={<FAQ />} />
         <Route path="/rules" element={<Rules />} />
       </Routes>
