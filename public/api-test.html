@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Configuration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .info-box strong {
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 API Configuration Test</h1>
+        <p class="subtitle">Verify your Vercel deployment configuration</p>
+
+        <div class="test-section">
+            <h3>Environment Configuration</h3>
+            <div id="envConfig">Checking...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>API Connectivity Test</h3>
+            <button onclick="testAPIConnection()">Test API Connection</button>
+            <div id="apiTest" class="result"></div>
+        </div>
+
+        <div class="info-box">
+            <strong>📋 Instructions:</strong>
+            <ol>
+                <li>Check the environment configuration above</li>
+                <li>Click "Test API Connection" to verify backend connectivity</li>
+                <li>Open browser console (F12) for detailed logs</li>
+                <li>If API base URL shows <code>/api</code>, you need to set <code>VITE_API_BASE_URL</code> in Vercel</li>
+            </ol>
+        </div>
+    </div>
+
+    <script type="module">
+        // Check environment configuration
+        const apiBaseURL = import.meta.env.VITE_API_BASE_URL || '/api';
+        const mode = import.meta.env.MODE;
+        const isDev = import.meta.env.DEV;
+        const isProd = import.meta.env.PROD;
+
+        const envConfigDiv = document.getElementById('envConfig');
+        
+        let configHTML = `
+            <p><strong>Mode:</strong> <code>${mode}</code></p>
+            <p><strong>API Base URL:</strong> <code>${apiBaseURL}</code> `;
+        
+        if (apiBaseURL === '/api') {
+            configHTML += `<span class="status error">⚠️ NOT CONFIGURED</span>`;
+        } else {
+            configHTML += `<span class="status success">✓ CONFIGURED</span>`;
+        }
+        
+        configHTML += `</p>
+            <p><strong>Environment:</strong> ${isDev ? 'Development' : 'Production'}</p>
+        `;
+
+        if (apiBaseURL === '/api') {
+            configHTML += `
+                <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 4px;">
+                    <strong>⚠️ Warning:</strong> API Base URL is not configured!<br>
+                    <small>Set <code>VITE_API_BASE_URL</code> in Vercel Dashboard → Settings → Environment Variables</small>
+                </div>
+            `;
+        }
+
+        envConfigDiv.innerHTML = configHTML;
+
+        // Test API connection
+        window.testAPIConnection = async function() {
+            const apiTestDiv = document.getElementById('apiTest');
+            const button = event.target;
+            
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            
+            apiTestDiv.innerHTML = '<p>Testing connection to: <code>' + apiBaseURL + '</code></p>';
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(apiBaseURL + '/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+
+                if (response.ok) {
+                    const data = await response.json();
+                    apiTestDiv.innerHTML += `
+                        <div style="margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 4px;">
+                            <strong>✓ Success!</strong><br>
+                            Status: ${response.status} ${response.statusText}<br>
+                            Response Time: ${duration}ms<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    apiTestDiv.innerHTML += `
+                        <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px;">
+                            <strong>⚠️ API Responded with Error</strong><br>
+                            Status: ${response.status} ${response.statusText}<br>
+                            This might be expected if /health endpoint doesn't exist.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                apiTestDiv.innerHTML += `
+                    <div style="margin-top: 10px; padding: 10px; background: #f8d7da; border-radius: 4px;">
+                        <strong>✗ Connection Failed</strong><br>
+                        Error: ${error.message}<br>
+                        <small>
+                            Possible causes:<br>
+                            • Backend is not accessible<br>
+                            • CORS is blocking the request<br>
+                            • Wrong API base URL<br>
+                            • Network connectivity issues
+                        </small>
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Test API Connection';
+            }
+        };
+
+        // Log configuration on load
+        console.log('🔧 API Configuration Test Page Loaded');
+        console.log('  - API Base URL:', apiBaseURL);
+        console.log('  - Mode:', mode);
+        console.log('  - Is Development:', isDev);
+        console.log('  - Is Production:', isProd);
+    </script>
+</body>
+</html>
