@@ -82,13 +82,21 @@ const SignUp = () => {
         };
 
         try {
-            await dispatch(registerUser(payload)).unwrap();
-            // Navigate to verification page with identifier
-            navigate('/verify', { state: { identifier: formData.email } });
+            const result = await dispatch(registerUser(payload)).unwrap();
+
+            console.log('Registration Dispatch Result:', result);
+
+            // Strict check: Only navigate if we have valid user data
+            if (result && typeof result === 'object') {
+                console.log('Registration successful, navigating to verify');
+                navigate('/verify', { state: { identifier: formData.email } });
+            } else {
+                console.error('Registration failed: Invalid user data received');
+                setErrors({ email: 'Registration failed. Please try again.' });
+            }
         } catch (err) {
             console.error('Registration failed:', err);
-            // The error from rejectWithValue is already in authError, but we can also set local error if needed
-            // or just rely on the UI displaying authError
+            // The error from rejectWithValue is already in authError
         }
     };
 

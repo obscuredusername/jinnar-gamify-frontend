@@ -17,26 +17,30 @@ export const loginUser = createAsyncThunk(
       console.log('Login API Response:', response);
       console.log('Login API Response Data:', response.data);
 
+      // Strict validation: Must have token and user
       const { token, user } = response.data;
 
-      if (token) {
-        localStorage.setItem('token', token);
+      if (!token) {
+        console.error('Login failed: No token in response');
+        return rejectWithValue('Authentication failed: No token received');
       }
 
-      if (user) {
-        return user;
-      } else {
-        // If user is not returned, fetch it
-        const userAction = await dispatch(fetchCurrentUser());
-        if (fetchCurrentUser.fulfilled.match(userAction)) {
-          return userAction.payload;
-        }
-        return null;
+      if (!user) {
+        console.error('Login failed: No user data in response');
+        return rejectWithValue('Authentication failed: No user data received');
       }
+
+      // Only store token if we have valid user data
+      localStorage.setItem('token', token);
+      console.log('Login successful, token stored');
+
+      return user;
     } catch (error) {
       console.error('Login API Error:', error);
       console.error('Login API Error Response:', error.response);
-      return rejectWithValue(error.response?.data?.message || error.message);
+      // Clear any existing token on error
+      localStorage.removeItem('token');
+      return rejectWithValue(error.response?.data?.message || error.message || 'Login failed');
     }
   }
 );
@@ -45,13 +49,35 @@ export const registerUser = createAsyncThunk(
   'user/register',
   async (userData, { rejectWithValue }) => {
     try {
+      console.log('Attempting registration with data:', userData);
       const response = await client.post('/auth/register', userData);
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+      console.log('Register API Response:', response);
+      console.log('Register API Response Data:', response.data);
+
+      // Strict validation: Must have token and user
+      const { token, user } = response.data;
+
+      if (!token) {
+        console.error('Registration failed: No token in response');
+        return rejectWithValue('Registration failed: No token received');
       }
-      return response.data.user || response.data; // Return user or full data if user object is missing
+
+      if (!user) {
+        console.error('Registration failed: No user data in response');
+        return rejectWithValue('Registration failed: No user data received');
+      }
+
+      // Only store token if we have valid user data
+      localStorage.setItem('token', token);
+      console.log('Registration successful, token stored');
+
+      return user;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || error.message);
+      console.error('Registration API Error:', error);
+      console.error('Registration API Error Response:', error.response);
+      // Clear any existing token on error
+      localStorage.removeItem('token');
+      return rejectWithValue(error.response?.data?.message || error.message || 'Registration failed');
     }
   }
 );
@@ -137,12 +163,21 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
-        state.isAuthenticated = true;
+        // Only mark as authenticated if we have valid user data
+        if (action.payload && typeof action.payload === 'object') {
+          state.user = action.payload;
+          state.isAuthenticated = true;
+        } else {
+          state.user = null;
+          state.isAuthenticated = false;
+          state.error = 'Invalid user data received';
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.user = null;
+        state.isAuthenticated = false;
       })
       // Register
       .addCase(registerUser.pending, (state) => {
@@ -151,17 +186,32 @@ const userSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
-        state.isAuthenticated = true;
+        // Only mark as authenticated if we have valid user data
+        if (action.payload && typeof action.payload === 'object') {
+          state.user = action.payload;
+          state.isAuthenticated = true;
+        } else {
+          state.user = null;
+          state.isAuthenticated = false;
+          state.error = 'Invalid user data received';
+        }
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.user = null;
+        state.isAuthenticated = false;
       })
       // Fetch Me
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        state.user = action.payload;
-        state.isAuthenticated = true;
+        // Only mark as authenticated if we have valid user data
+        if (action.payload && typeof action.payload === 'object') {
+          state.user = action.payload;
+          state.isAuthenticated = true;
+        } else {
+          state.user = null;
+          state.isAuthenticated = false;
+        }
       })
       .addCase(fetchCurrentUser.rejected, (state) => {
         state.user = null;

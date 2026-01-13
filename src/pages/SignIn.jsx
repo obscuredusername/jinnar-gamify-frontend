@@ -62,10 +62,20 @@ const SignIn = () => {
                 identifier: formData.email,
                 password: formData.password
             })).unwrap();
+
             console.log('Login Dispatch Result:', result);
-            navigate('/dashboard');
+
+            // Strict check: Only navigate if we have valid user data
+            if (result && typeof result === 'object') {
+                console.log('Login successful, navigating to dashboard');
+                navigate('/dashboard');
+            } else {
+                console.error('Login failed: Invalid user data received');
+                setErrors({ email: 'Login failed. Please try again.' });
+            }
         } catch (err) {
             console.error('Login failed:', err);
+            // Error is already displayed via authError from Redux state
         }
     };
 
