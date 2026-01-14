@@ -60,8 +60,8 @@ const Header = () => {
                             <Link
                                 to="/announcements"
                                 className={`text-sm font-medium transition-colors ${isActive('/announcements')
-                                        ? 'text-blue-800 border-b-2 border-blue-800 pb-1'
-                                        : 'text-gray-700 hover:text-blue-800'
+                                    ? 'text-blue-800 border-b-2 border-blue-800 pb-1'
+                                    : 'text-gray-700 hover:text-blue-800'
                                     }`}
                             >
                                 Announcements
@@ -80,7 +80,7 @@ const Header = () => {
                         {/* Action Buttons */}
                         <div className="flex gap-4 items-center">
                             <button
-                                onClick={() => navigate('/draws')}
+                                onClick={() => navigate('/challenge')}
                                 className="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-2 px-6 rounded-md transition-colors"
                             >
                                 Join Active Draw
@@ -118,21 +118,21 @@ const Header = () => {
                                             )}
                                         </div>
                                         <Link
-                                            to="/profile"
+                                            to="/dashboard"
                                             onClick={() => setShowDropdown(false)}
                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                         >
-                                            My Profile
+                                            My Dashboard
                                         </Link>
                                         <Link
-                                            to="/my-videos"
+                                            to="/dashboard"
                                             onClick={() => setShowDropdown(false)}
                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                         >
                                             My Videos
                                         </Link>
                                         <Link
-                                            to="/settings"
+                                            to="/dashboard"
                                             onClick={() => setShowDropdown(false)}
                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                         >
