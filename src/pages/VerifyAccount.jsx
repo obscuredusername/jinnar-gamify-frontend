@@ -19,6 +19,8 @@ const VerifyAccount = () => {
     useEffect(() => {
         if (location.state?.identifier) {
             setIdentifier(location.state.identifier);
+            // Show initial message if coming from signup
+            setSuccessMessage(`We've sent a verification code to ${location.state.identifier}`);
         }
     }, [location.state]);
 
@@ -32,9 +34,10 @@ const VerifyAccount = () => {
 
         try {
             await dispatch(resendCode(identifier)).unwrap();
-            setSuccessMessage('Verification code resent successfully!');
+            setSuccessMessage(`A new verification code has been sent to ${identifier}`);
         } catch (err) {
             console.error('Resend failed:', err);
+            // Error is handled by redux state, but we can also set local error if needed
         }
     };
 
@@ -49,15 +52,17 @@ const VerifyAccount = () => {
         }
 
         if (!otp) {
-            setError('OTP code is required');
+            setError('Please enter the verification code');
             return;
         }
 
         try {
             await dispatch(verifyUser({ identifier, code: otp })).unwrap();
-            // On success, redirect to login or dashboard
-            // Assuming user needs to login after verification or if token was stored during register
-            navigate('/signin');
+            // On success, redirect to login
+            setSuccessMessage('Account verified successfully! Redirecting to login...');
+            setTimeout(() => {
+                navigate('/signin');
+            }, 2000);
         } catch (err) {
             console.error('Verification failed:', err);
         }
@@ -76,18 +81,18 @@ const VerifyAccount = () => {
                         Verify Your Account
                     </h1>
                     <p className="text-gray-600">
-                        Enter the verification code sent to {identifier || 'your email/phone'}
+                        Enter the 6-digit code sent to your email/phone
                     </p>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-xl p-8">
                     {(error || authError) && (
-                        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm border border-red-100">
                             {error || authError}
                         </div>
                     )}
                     {successMessage && (
-                        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm">
+                        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm border border-green-100">
                             {successMessage}
                         </div>
                     )}
@@ -103,14 +108,20 @@ const VerifyAccount = () => {
                             />
                         )}
 
-                        <Input
-                            label="Verification Code"
-                            type="text"
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                            placeholder="Enter 6-digit code"
-                            maxLength={6}
-                        />
+                        <div>
+                            <Input
+                                label="Verification Code"
+                                type="text"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                placeholder="e.g. 758037"
+                                maxLength={6}
+                                className="text-center tracking-widest text-lg"
+                            />
+                            <p className="mt-2 text-xs text-gray-500 text-center">
+                                The code is 6 digits long
+                            </p>
+                        </div>
 
                         <Button
                             type="submit"
@@ -129,10 +140,10 @@ const VerifyAccount = () => {
                             <button
                                 type="button"
                                 onClick={handleResendCode}
-                                className="font-medium text-primary-600 hover:text-primary-700 disabled:opacity-50"
+                                className="font-medium text-primary-600 hover:text-primary-700 disabled:opacity-50 transition-colors"
                                 disabled={loading || !identifier}
                             >
-                                Resend Code
+                                {loading ? 'Sending...' : 'Resend Code'}
                             </button>
                         </p>
                     </div>

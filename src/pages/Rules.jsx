@@ -1,147 +1,147 @@
 import React, { useState } from 'react';
-import { rulesData } from '../data/rules';
+import { Link } from 'react-router-dom';
 import Header from '../components/ui/Header';
 import Footer from '../components/ui/Footer';
+import { rulesData } from '../data/rules';
+import { AlertCircleIcon, ChevronRightIcon } from '../components/ui/Icons';
 
 const Rules = () => {
-    const [openId, setOpenId] = useState(1); // Default first one open
+    const [openSection, setOpenSection] = useState(1); // Default first section open
 
     const toggleSection = (id) => {
-        setOpenId(openId === id ? null : id);
+        setOpenSection(openSection === id ? null : id);
     };
 
-    const renderContent = (item, index) => {
-        if (item.type === 'list') {
+    // Helper to parse text with bolding and links
+    const parseContent = (text) => {
+        if (!text) return null;
+
+        // Handle specific links first
+        if (text.includes('Announcements Page')) {
+            const split = text.split('Announcements Page');
             return (
-                <div key={index} className="mb-2">
-                    <div className="text-slate-700 mb-1">
-                        {index + 1}. {item.text}
-                    </div>
-                    <ul className="list-disc pl-8 text-slate-600 space-y-1">
-                        {item.items.map((subItem, subIndex) => (
-                            <li key={subIndex} dangerouslySetInnerHTML={{
-                                __html: subItem.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            }} />
-                        ))}
-                    </ul>
-                </div>
+                <span>
+                    {parseBold(split[0])}
+                    <Link to="/announcements" className="text-blue-600 hover:underline font-semibold">Announcements Page</Link>
+                    {parseBold(split[1])}
+                </span>
             );
         }
-        return (
-            <div key={index} className="mb-2 text-slate-700 flex gap-2">
-                <span className="font-semibold text-slate-900 min-w-[1.5rem]">{index + 1}.</span>
-                <span dangerouslySetInnerHTML={{
-                    __html: item.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                }} />
-            </div>
+
+        if (text.includes('Prize & Rewards Page')) {
+            const split = text.split('Prize & Rewards Page');
+            return (
+                <span>
+                    {parseBold(split[0])}
+                    <Link to="/winners" className="text-blue-600 hover:underline font-semibold">Prize & Rewards Page</Link>
+                    {parseBold(split[1])}
+                </span>
+            );
+        }
+
+        return parseBold(text);
+    };
+
+    const parseBold = (text) => {
+        if (!text) return null;
+        const parts = text.split('**');
+        return parts.map((part, index) =>
+            index % 2 === 1 ? <strong key={index}>{part}</strong> : part
         );
     };
 
     return (
-        <div className="min-h-screen bg-blue-50 font-sans text-slate-800">
+        <div className="min-h-screen bg-blue-50/50">
             <Header />
 
-            {/* Hero Section */}
-            <div className="relative overflow-hidden bg-gradient-to-b from-white to-blue-50 pb-8 pt-10">
-                <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between">
-                    <div className="md:w-1/2 z-10">
-                        <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-2">
-                            Official Rules & Terms of Use
-                        </h1>
-                        <p className="text-sm text-slate-500 mb-6 uppercase tracking-wide">
-                            Last Updated: 2025
-                        </p>
-
-                        {/* Disclaimer Box */}
-                        <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-md flex gap-4 shadow-sm">
-                            <div className="flex-shrink-0 text-orange-500 pt-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
+            {/* Hero / Top Section */}
+            <div className="bg-white border-b border-gray-200 pt-12 pb-16 px-6 relative overflow-hidden">
+                <div className="max-w-5xl mx-auto relative z-10">
+                    <div className="flex justify-between items-start mb-8">
+                        <div>
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-teal-400 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                                    J
+                                </div>
+                                <span className="text-2xl font-bold text-blue-900">Jinnar Viral</span>
                             </div>
-                            <div className="text-xs md:text-sm text-slate-700 leading-relaxed">
-                                The <strong>Jinnar Viral Challenge</strong> ("Contest", "Challenge", or "Jinnar Viral") is operated by Jinnar, a product of Tropina Inc. Participation in this Contest constitutes full and unconditional acceptance of these Rules & Terms of Use. Failure to comply may lead to disqualification, account suspension, or prize forfeiture.
-                            </div>
+                            <h1 className="text-4xl font-bold text-blue-900 mb-2">Official Rules & Terms of Use</h1>
+                            <p className="text-gray-500">Last Updated: 2025</p>
                         </div>
+
                     </div>
 
-                    {/* Illustration Placeholder */}
-                    <div className="md:w-1/2 mt-8 md:mt-0 flex justify-center relative">
-                        <div className="relative w-72 h-64">
-                            {/* SVG illustration of Rules/Clipboard */}
-                            <svg viewBox="0 0 300 250" className="w-full h-full drop-shadow-xl">
-                                {/* Background elements */}
-                                <circle cx="250" cy="50" r="10" fill="#FCD34D" opacity="0.5" />
-                                <rect x="20" y="40" width="20" height="20" rx="4" fill="#BFDBFE" opacity="0.5" />
-
-                                {/* Clipboard */}
-                                <rect x="150" y="40" width="120" height="160" rx="5" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="2" />
-                                <rect x="150" y="40" width="120" height="160" rx="5" fill="#EFF6FF" />
-                                <rect x="160" y="50" width="100" height="140" rx="2" fill="#FFFFFF" />
-
-                                {/* Clip */}
-                                <rect x="180" y="30" width="60" height="20" rx="5" fill="#F59E0B" />
-                                <circle cx="210" cy="40" r="5" fill="#FFFFFF" />
-
-                                {/* Text Lines */}
-                                <rect x="170" y="70" width="80" height="8" rx="2" fill="#3B82F6" opacity="0.2" />
-                                <rect x="170" y="90" width="80" height="4" rx="2" fill="#94A3B8" opacity="0.5" />
-                                <rect x="170" y="100" width="60" height="4" rx="2" fill="#94A3B8" opacity="0.5" />
-                                <rect x="170" y="110" width="70" height="4" rx="2" fill="#94A3B8" opacity="0.5" />
-
-                                {/* Gavel */}
-                                <rect x="80" y="120" width="80" height="20" rx="2" fill="#D97706" transform="rotate(-20 120 130)" />
-                                <rect x="60" y="110" width="40" height="40" rx="5" fill="#F59E0B" transform="rotate(-20 80 130)" />
-                                <rect x="100" y="160" width="60" height="15" rx="2" fill="#78350F" />
-
-                                {/* RULES Text */}
-                                <text x="175" y="85" fontFamily="sans-serif" fontSize="16" fontWeight="bold" fill="#1E40AF">RULES</text>
-                            </svg>
+                    {/* Warning Box */}
+                    <div className="bg-orange-50 border border-orange-100 rounded-xl p-6 flex gap-4 items-start max-w-3xl">
+                        <div className="text-orange-500 mt-1 flex-shrink-0">
+                            <AlertCircleIcon className="w-6 h-6" />
                         </div>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                            <span className="font-bold text-gray-900">The Jinnar Viral Challenge ("Contest", "Challenge", or "Jinnar Viral")</span> is operated by Jinnar, a product of Tropina Inc. Participation in this Contest constitutes full and unconditional acceptance of these Rules & Terms of Use. Failure to comply may lead to disqualification, account suspension, or prize forfeiture.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Decorative Illustration (Right Side) */}
+                <div className="absolute top-10 right-0 opacity-10 md:opacity-100 pointer-events-none hidden lg:block">
+                    {/* Placeholder for the clipboard illustration */}
+                    <div className="w-64 h-64 bg-blue-100 rounded-full flex items-center justify-center text-blue-300 text-6xl">
+                        📋
                     </div>
                 </div>
             </div>
 
-            {/* Accordion Section */}
-            <div className="max-w-4xl mx-auto px-4 pb-20">
-                <div className="space-y-3">
-                    {rulesData.map((section) => (
-                        <div key={section.id} className="bg-white rounded-lg shadow-sm border border-blue-100 overflow-hidden">
-                            <button
-                                onClick={() => toggleSection(section.id)}
-                                className={`w-full flex items-center justify-between p-4 text-left transition-colors ${openId === section.id ? 'bg-blue-50/50' : 'hover:bg-gray-50'}`}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-orange-100 text-orange-600 rounded-md font-bold text-lg">
-                                        {section.id}
-                                    </span>
-                                    <span className="font-bold text-blue-900 text-lg">
-                                        {section.title}
-                                    </span>
-                                </div>
-                                <svg
-                                    className={`w-5 h-5 text-gray-400 transform transition-transform duration-200 ${openId === section.id ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
+            {/* Rules Content */}
+            <div className="max-w-5xl mx-auto px-6 py-12 space-y-4">
+                {rulesData.map((section) => (
+                    <div
+                        key={section.id}
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all"
+                    >
+                        <button
+                            onClick={() => toggleSection(section.id)}
+                            className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors text-left"
+                        >
+                            <div className="flex items-center gap-4">
+                                <span className="text-2xl font-bold text-orange-400 w-8">{section.id}</span>
+                                <h2 className="text-xl font-bold text-blue-900">{section.title}</h2>
+                            </div>
+                            <div className={`transform transition-transform duration-200 ${openSection === section.id ? 'rotate-180' : ''}`}>
+                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
-                            </button>
+                            </div>
+                        </button>
 
-                            {openId === section.id && (
-                                <div className="px-4 pb-6 pt-2 pl-16 pr-8 bg-blue-50/20 border-t border-blue-50">
-                                    <div className="space-y-2">
-                                        {section.content.map((item, idx) => renderContent(item, idx))}
-                                    </div>
+                        {openSection === section.id && (
+                            <div className="px-6 pb-8 pt-2 border-t border-gray-100 bg-blue-50/30">
+                                <div className="pl-12 space-y-4">
+                                    {section.content.map((item, idx) => (
+                                        <div key={idx} className="text-gray-700 leading-relaxed">
+                                            {item.type === 'list' ? (
+                                                <div>
+                                                    <p className="mb-2">{parseContent(item.text)}</p>
+                                                    <ul className="list-disc list-inside space-y-1 ml-4 text-gray-600">
+                                                        {item.items.map((li, liIdx) => (
+                                                            <li key={liIdx}>{parseContent(li)}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            ) : (
+                                                <div className="flex gap-3">
+                                                    <span className="font-bold text-gray-400 text-sm mt-1">{idx + 1}.</span>
+                                                    <div>{parseContent(item.text)}</div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
 
-            {/* Footer */}
             <Footer />
         </div>
     );

@@ -1,40 +1,75 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import Home from './pages/Home';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import VerifyAccount from './pages/VerifyAccount';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import Dashboard from './pages/Dashboard';
+import JinnarChallenge from './pages/JinnarChallenge';
 import FAQ from './pages/FAQ';
 import Rules from './pages/Rules';
+import Leaderboards from './pages/Leaderboards';
+import Winners from './pages/Winners';
+import Announcements from './pages/Announcements';
+import MediaHighlights from './pages/MediaHighlights';
+import PastWinners from './pages/PastWinners';
+import UserDashboard from './pages/UserDashboard';
+import UploadVideo from './pages/UploadVideo';
+import SubmitPostLink from './pages/SubmitPostLink';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/signin" replace />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/verify" element={<VerifyAccount />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+  const { isAuthenticated } = useSelector((state) => state.user);
 
-        {/* Protected Routes - Require Authentication */}
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<SignIn />} />
+        <Route path="/register" element={<SignUp />} />
+        {/* Keep old routes for backward compatibility */}
+        <Route path="/signin" element={<Navigate to="/login" replace />} />
+        <Route path="/signup" element={<Navigate to="/register" replace />} />
+        <Route path="/verify" element={<VerifyAccount />} />
+        <Route path="/challenge" element={<JinnarChallenge />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/rules" element={<Rules />} />
+        <Route path="/leaderboards" element={<Leaderboards />} />
+        <Route path="/winners" element={<Winners />} />
+        <Route path="/announcements" element={<Announcements />} />
+        <Route path="/media" element={<MediaHighlights />} />
+        <Route path="/past-winners" element={<PastWinners />} />
+
+
+        {/* Protected Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <UserDashboard />
             </ProtectedRoute>
           }
         />
-
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/rules" element={<Rules />} />
+        <Route
+          path="/upload"
+          element={
+            <ProtectedRoute>
+              <UploadVideo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/submit-link"
+          element={
+            <ProtectedRoute>
+              <SubmitPostLink />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
 
 export default App;
+

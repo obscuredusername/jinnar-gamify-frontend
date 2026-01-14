@@ -18,10 +18,11 @@ const ProtectedRoute = ({ children }) => {
 
     // STRICT VALIDATION: All conditions must be true
     const hasValidToken = token && token.length > 0;
-    const hasValidUser = user &&
-        typeof user === 'object' &&
-        user.id &&
-        user.email;
+
+    // Relaxed user validation: Check if we have a user object
+    // The token decoding might not provide all fields like email, so we check for basic existence
+    const hasValidUser = user && typeof user === 'object';
+
     const isAuthenticatedInRedux = isAuthenticated === true;
 
     console.log('🛡️ ProtectedRoute Check:', {
@@ -29,8 +30,7 @@ const ProtectedRoute = ({ children }) => {
         hasValidToken,
         hasValidUser,
         tokenLength: token?.length || 0,
-        userId: user?.id,
-        userEmail: user?.email,
+        userKeys: user ? Object.keys(user) : [],
     });
 
     // If ANY validation fails, redirect to sign in
