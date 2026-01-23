@@ -15,6 +15,8 @@ import PastWinners from './pages/PastWinners';
 import UserDashboard from './pages/UserDashboard';
 import UploadVideo from './pages/UploadVideo';
 import SubmitPostLink from './pages/SubmitPostLink';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -39,6 +41,8 @@ function App() {
         <Route path="/announcements" element={<Announcements />} />
         <Route path="/media" element={<MediaHighlights />} />
         <Route path="/past-winners" element={<PastWinners />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
 
         {/* Protected Routes */}

@@ -1,9 +1,31 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import client from '../../api/client';
 
+// Helper to load user from local storage
+const loadUserFromStorage = () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    // Decode token to get user info
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.warn('Failed to load user from storage', error);
+    return null;
+  }
+};
+
+const storedUser = loadUserFromStorage();
+
 const initialState = {
-  user: null,
-  isAuthenticated: false,
+  user: storedUser,
+  isAuthenticated: !!storedUser,
   loading: false,
   error: null,
 };
