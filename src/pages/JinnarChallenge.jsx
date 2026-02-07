@@ -1,11 +1,57 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/ui/Header';
 import Footer from '../components/ui/Footer';
 import challengeData from '../data/jinnarChallenge';
 import { faqData } from '../data/FAQ';
+import viralService from '../services/viralService';
 
 const JinnarChallenge = () => {
+    // State for dynamic data
+    const [activeDraw, setActiveDraw] = useState(null);
+    const [leaderboardPreview, setLeaderboardPreview] = useState([]);
+    const [loadingDraw, setLoadingDraw] = useState(true);
+    const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+
+    // Fetch Active Draw
+    useEffect(() => {
+        const fetchActiveDraw = async () => {
+            try {
+                const response = await viralService.getActiveDraws();
+                if (response.success && response.data.length > 0) {
+                    // Get the first active draw (most relevant one)
+                    const draw = response.data[0];
+                    setActiveDraw(draw);
+
+                    // Once we have a draw, fetch its top 3 leaders for preview
+                    fetchLeaderboardPreview(draw._id);
+                }
+            } catch (error) {
+                console.error('Error fetching active draw:', error);
+            } finally {
+                setLoadingDraw(false);
+            }
+        };
+
+        fetchActiveDraw();
+    }, []);
+
+    // Fetch Leaderboard Preview for the specific draw
+    const fetchLeaderboardPreview = async (drawId) => {
+        setLoadingLeaderboard(true);
+        try {
+            // scope='global', limit=3
+            const response = await viralService.getLeaderboard(drawId, 'global', 3);
+            if (response.success) {
+                setLeaderboardPreview(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching leaderboard preview:', error);
+        } finally {
+            setLoadingLeaderboard(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}
@@ -26,7 +72,7 @@ const JinnarChallenge = () => {
                         <div className="flex gap-3">
                             <Link to="/upload">
                                 <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2.5 px-6 rounded-md transition-colors">
-                                    Join Challenge
+                                    {activeDraw ? 'Join Active Challenge' : 'Join Challenge'}
                                 </button>
                             </Link>
                             <Link to="/upload">
@@ -40,7 +86,7 @@ const JinnarChallenge = () => {
                         </div>
                     </div>
                     <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl h-72 flex items-center justify-center">
-                        <p className="text-gray-400 text-sm">Hero Illustration</p>
+                        <span className="text-6xl">🚀</span>
                     </div>
                 </div>
 
@@ -56,27 +102,34 @@ const JinnarChallenge = () => {
                             <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
                                 1
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900">Join an Active Draw</h3>
+                            <h3 className="text-2xl font-bold text-gray-900">
+                                {activeDraw ? `Join ${activeDraw.title}` : 'Join an Active Draw'}
+                            </h3>
                         </div>
 
                         <p className="text-gray-700 mb-4">
-                            Jinnar runs numbered challenge rounds called <span className="font-semibold">Draws</span> (Draw 1, Draw 2, Draw 3...). Each Draw has:
+                            Jinnar runs numbered challenge rounds called <span className="font-semibold">Draws</span>.
+                            {activeDraw && (
+                                <span className="block mt-2 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                    <strong className="text-blue-800">Current Theme:</strong> {activeDraw.theme}
+                                </span>
+                            )}
                         </p>
+
+                        {!activeDraw && (
+                            <p className="text-gray-700 mb-4">Each Draw has a focus topic, official hashtags, deadlines, and a prize pool.</p>
+                        )}
 
                         <ul className="space-y-2 mb-4 ml-4">
                             <li className="text-gray-700">• A focus topic or creative direction</li>
-                            <li className="text-gray-700">• Official hashtags and caption examples</li>
-                            <li className="text-gray-700">• A start and closing date</li>
-                            <li className="text-gray-700">• A prize pool</li>
+                            <li className="text-gray-700">• Official hashtags (e.g., {activeDraw?.hashtags?.join(' ') || '#JinnarViral'})</li>
+                            <li className="text-gray-700">• Contest Closes: {activeDraw ? new Date(activeDraw.endDate).toLocaleDateString() : 'See details'}</li>
+                            <li className="text-gray-700">• Prize Pool: <span className="font-bold text-green-600">${activeDraw?.prizePool?.toLocaleString() || '10,000'}</span></li>
                         </ul>
-
-                        <p className="text-gray-600 text-sm mb-4">
-                            Participants may join any active draw. →
-                        </p>
 
                         <Link to="/upload">
                             <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2 px-5 rounded-md transition-colors flex items-center gap-2">
-                                View Current Draws
+                                {loadingDraw ? 'Loading Draw...' : 'Join Now'}
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
@@ -85,7 +138,7 @@ const JinnarChallenge = () => {
                     </div>
 
                     <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl h-64 flex items-center justify-center">
-                        <p className="text-gray-400 text-sm">Draw 3 Illustration</p>
+                        <span className="text-5xl">🎯</span>
                     </div>
                 </div>
 
@@ -101,6 +154,7 @@ const JinnarChallenge = () => {
                             <h3 className="text-xl font-bold text-gray-900">Upload Your Video for Approval</h3>
                         </div>
 
+                        {/* Static content for step 2 remains valid */}
                         <p className="text-gray-700 mb-4 text-sm">
                             Before posting publicly, upload your video to Jinnar Viral for review. This ensures content quality, safety, and brand alignment.
                         </p>
@@ -166,10 +220,6 @@ const JinnarChallenge = () => {
                                 </svg>
                             </button>
                         </Link>
-
-                        <div className="mt-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl h-48 flex items-center justify-center">
-                            <p className="text-gray-400 text-sm">Social Media Illustration</p>
-                        </div>
                     </div>
                 </div>
 
@@ -179,61 +229,52 @@ const JinnarChallenge = () => {
                         <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
                             4
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900">Compete Within Each Draw</h3>
+                        <h3 className="text-2xl font-bold text-gray-900">Compete Within This Draw</h3>
                     </div>
 
-                    {/* Leaderboard */}
+                    {/* Leaderboard Preview */}
                     <div className="max-w-md">
                         <div className="bg-gray-900 text-white rounded-xl p-5 mb-4">
                             <div className="flex justify-between items-center mb-4">
-                                <h4 className="text-lg font-bold">Draw 3 - East Africa</h4>
+                                <h4 className="text-lg font-bold">
+                                    {activeDraw ? `Leaders: ${activeDraw.title}` : 'Leaderboard Preview'}
+                                </h4>
                                 <Link to="/leaderboards" className="text-xs text-blue-400 hover:text-blue-300">
-                                    View Leaderboards →
+                                    View Full Leaderboard →
                                 </Link>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="grid grid-cols-4 gap-3 text-xs text-gray-400 pb-2 border-b border-gray-700">
                                     <div>Rank</div>
-                                    <div>Name</div>
-                                    <div>Country</div>
+                                    <div className="col-span-2">Name</div>
                                     <div className="text-right">Points</div>
                                 </div>
 
-                                <div className="grid grid-cols-4 gap-3 items-center text-sm">
-                                    <div className="text-blue-400 font-bold"># 1</div>
-                                    <div>Joseph M.</div>
-                                    <div className="flex items-center gap-1">
-                                        <span>🇰🇪</span>
-                                        <span className="text-xs">Kenya</span>
+                                {loadingLeaderboard ? (
+                                    <div className="text-center py-4 text-gray-500 text-sm">Loading current leaders...</div>
+                                ) : leaderboardPreview.length === 0 ? (
+                                    <div className="text-center py-4 text-gray-500 text-sm">
+                                        No entries yet. Be the first!
                                     </div>
-                                    <div className="text-right font-bold">12,900</div>
-                                </div>
-
-                                <div className="grid grid-cols-4 gap-3 items-center text-sm">
-                                    <div className="text-blue-400 font-bold"># 2</div>
-                                    <div>Maria N.</div>
-                                    <div className="flex items-center gap-1">
-                                        <span>🇹🇿</span>
-                                        <span className="text-xs">Tanzania</span>
-                                    </div>
-                                    <div className="text-right font-bold">11,540</div>
-                                </div>
-
-                                <div className="grid grid-cols-4 gap-3 items-center text-sm">
-                                    <div className="text-blue-400 font-bold"># 3</div>
-                                    <div>Gift M.</div>
-                                    <div className="flex items-center gap-1">
-                                        <span>🇺🇬</span>
-                                        <span className="text-xs">Uganda</span>
-                                    </div>
-                                    <div className="text-right font-bold">10,200</div>
-                                </div>
+                                ) : (
+                                    leaderboardPreview.map((entry, index) => (
+                                        <div key={index} className="grid grid-cols-4 gap-3 items-center text-sm">
+                                            <div className="text-blue-400 font-bold"># {entry.rank || index + 1}</div>
+                                            <div className="col-span-2 flex items-center gap-2">
+                                                <span>{entry.name || 'Anonymous user'}</span>
+                                                {/* Flag placeholder - api might not return country code yet */}
+                                                <span className="text-xs text-gray-500">{entry.country || '🌐'}</span>
+                                            </div>
+                                            <div className="text-right font-bold">{entry.totalPoints?.toLocaleString()}</div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
 
                             <div className="mt-4 pt-3 border-t border-gray-700">
                                 <p className="text-xs text-gray-400">
-                                    Points ≈ <span className="font-semibold">2,000</span> likes + <span className="font-semibold">300</span> ≈ <span className="font-semibold">2,600</span> points
+                                    <span className="font-semibold">Get Points:</span> Likes, views, shares + content quality.
                                 </p>
                             </div>
                         </div>
@@ -256,9 +297,9 @@ const JinnarChallenge = () => {
                     </p>
 
                     <ul className="space-y-2 mb-6 ml-4 max-w-xl">
-                        <li className="text-gray-700">• Cash prizes</li>
+                        <li className="text-gray-700">• Cash prize pool of {activeDraw?.prizePool ? `$${activeDraw.prizePool.toLocaleString()}` : '$10,000+'}</li>
                         <li className="text-gray-700">• Official Jinnar merchandise</li>
-                        <li className="text-gray-700">• Public recognition</li>
+                        <li className="text-gray-700">• Public recognition on our socials</li>
                     </ul>
 
                     <Link to="/winners">
@@ -275,7 +316,9 @@ const JinnarChallenge = () => {
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 mb-12">
                     <div className="flex items-center gap-2 mb-3">
                         <span className="text-2xl">🎯</span>
-                        <h2 className="text-2xl font-bold text-gray-900">Ready to Join the Next Draw?</h2>
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            Ready to Join {activeDraw ? activeDraw.title : 'the Next Draw'}?
+                        </h2>
                     </div>
                     <p className="text-gray-700 mb-6">Create. Share. Compete. Win.</p>
                     <div className="flex gap-3">
@@ -295,8 +338,7 @@ const JinnarChallenge = () => {
                     </div>
                 </div>
 
-
-                {/* FAQ Preview */}
+                {/* FAQ Preview - Static Data is fine here */}
                 <div className="bg-blue-50 rounded-2xl p-8">
                     <div className="flex items-center gap-2 mb-2">
                         <span className="text-xl">📋</span>

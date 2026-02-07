@@ -17,6 +17,7 @@ import UploadVideo from './pages/UploadVideo';
 import SubmitPostLink from './pages/SubmitPostLink';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Settings from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -67,6 +68,14 @@ function App() {
           element={
             <ProtectedRoute>
               <SubmitPostLink />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           }
         />

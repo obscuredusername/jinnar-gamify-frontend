@@ -1,0 +1,436 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Header from '../components/ui/Header';
+import Footer from '../components/ui/Footer';
+import userService from '../services/userService';
+import authService from '../services/authService';
+
+const Settings = () => {
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('profile');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
+
+    // Profile form state
+    const [profileData, setProfileData] = useState({
+        name: '',
+        bio: '',
+        location: '',
+        phone: ''
+    });
+
+    // Password change state
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+
+    // Email change state
+    const [emailData, setEmailData] = useState({
+        newEmail: '',
+        verificationCode: ''
+    });
+    const [emailChangeStep, setEmailChangeStep] = useState('initiate'); // 'initiate' or 'verify'
+
+    // Role switch state
+    const [selectedRole, setSelectedRole] = useState('client');
+
+    // Load user profile on mount
+    useEffect(() => {
+        loadProfile();
+    }, []);
+
+    const loadProfile = async () => {
+        try {
+            const data = await userService.getProfile();
+            setProfileData({
+                name: data.name || '',
+                bio: data.bio || '',
+                location: data.location || '',
+                phone: data.phone || ''
+            });
+            setSelectedRole(data.role || 'client');
+        } catch (error) {
+            console.error('Failed to load profile:', error);
+            showMessage('error', 'Failed to load profile data');
+        }
+    };
+
+    const showMessage = (type, text) => {
+        setMessage({ type, text });
+        setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+    };
+
+    // Handle profile update
+    const handleProfileUpdate = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await userService.updateProfile(profileData);
+            showMessage('success', 'Profile updated successfully!');
+        } catch (error) {
+            showMessage('error', error.response?.data?.message || 'Failed to update profile');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handle password change
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            showMessage('error', 'Passwords do not match');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // Note: You'll need to implement this endpoint
+            await authService.changePassword(passwordData.currentPassword, passwordData.newPassword);
+            showMessage('success', 'Password changed successfully!');
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        } catch (error) {
+            showMessage('error', error.response?.data?.message || 'Failed to change password');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handle email change initiation
+    const handleInitiateEmailChange = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await authService.initiateContactChange(emailData.newEmail);
+            setEmailChangeStep('verify');
+            showMessage('success', 'Verification code sent to your new email!');
+        } catch (error) {
+            showMessage('error', error.response?.data?.message || 'Failed to initiate email change');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handle email change verification
+    const handleVerifyEmailChange = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await authService.verifyContactChange(emailData.verificationCode);
+            showMessage('success', 'Email changed successfully!');
+            setEmailChangeStep('initiate');
+            setEmailData({ newEmail: '', verificationCode: '' });
+        } catch (error) {
+            showMessage('error', error.response?.data?.message || 'Failed to verify email change');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handle role switch
+    const handleRoleSwitch = async () => {
+        setLoading(true);
+        try {
+            await authService.switchRole(selectedRole);
+            showMessage('success', `Role switched to ${selectedRole} successfully!`);
+            // Reload profile to get updated role
+            await loadProfile();
+        } catch (error) {
+            showMessage('error', error.response?.data?.message || 'Failed to switch role');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+            <Header />
+
+            <div className="flex-1 max-w-5xl mx-auto px-6 py-8 w-full">
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+                    <p className="text-gray-600 mt-2">Manage your account settings and preferences</p>
+                </div>
+
+                {/* Message Alert */}
+                {message.text && (
+                    <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+                        'bg-red-50 text-red-800 border border-red-200'
+                        }`}>
+                        {message.text}
+                    </div>
+                )}
+
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                    {/* Tabs */}
+                    <div className="border-b">
+                        <div className="flex gap-1 p-2 flex-wrap">
+                            {['profile', 'password', 'email', 'role'].map(tab => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={`px-6 py-3 rounded-lg font-semibold transition-colors ${activeTab === tab
+                                        ? 'bg-blue-800 text-white'
+                                        : 'text-gray-600 hover:bg-gray-100'
+                                        }`}
+                                >
+                                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="p-6">
+                        {/* Profile Tab */}
+                        {activeTab === 'profile' && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>
+                                <form onSubmit={handleProfileUpdate} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Full Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={profileData.name}
+                                            onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="John Doe"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Bio
+                                        </label>
+                                        <textarea
+                                            value={profileData.bio}
+                                            onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                                            rows={4}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Tell us about yourself..."
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Location
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={profileData.location}
+                                            onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Lagos, Nigeria"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Phone Number
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            value={profileData.phone}
+                                            onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="+234 801 234 5678"
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? 'Updating...' : 'Update Profile'}
+                                    </button>
+                                </form>
+                            </div>
+                        )}
+
+                        {/* Password Tab */}
+                        {activeTab === 'password' && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-6">Change Password</h2>
+                                <form onSubmit={handlePasswordChange} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Current Password
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={passwordData.currentPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            New Password
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={passwordData.newPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Confirm New Password
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={passwordData.confirmPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            required
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? 'Changing...' : 'Change Password'}
+                                    </button>
+                                </form>
+                            </div>
+                        )}
+
+                        {/* Email Tab */}
+                        {activeTab === 'email' && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-6">Change Email Address</h2>
+
+                                {emailChangeStep === 'initiate' ? (
+                                    <form onSubmit={handleInitiateEmailChange} className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                New Email Address
+                                            </label>
+                                            <input
+                                                type="email"
+                                                value={emailData.newEmail}
+                                                onChange={(e) => setEmailData({ ...emailData, newEmail: e.target.value })}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                placeholder="newemail@example.com"
+                                                required
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {loading ? 'Sending...' : 'Send Verification Code'}
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <form onSubmit={handleVerifyEmailChange} className="space-y-4">
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                            <p className="text-sm text-blue-800">
+                                                We've sent a verification code to <strong>{emailData.newEmail}</strong>
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Verification Code
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={emailData.verificationCode}
+                                                onChange={(e) => setEmailData({ ...emailData, verificationCode: e.target.value })}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                placeholder="123456"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="flex gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setEmailChangeStep('initiate')}
+                                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={loading}
+                                                className="flex-1 bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {loading ? 'Verifying...' : 'Verify Email'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Role Tab */}
+                        {activeTab === 'role' && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-6">Switch Role</h2>
+                                <div className="space-y-4">
+                                    <p className="text-gray-600">
+                                        Select the role you want to switch to. This will change your account permissions and available features.
+                                    </p>
+
+                                    <div className="space-y-3">
+                                        {['client', 'worker'].map(role => (
+                                            <label
+                                                key={role}
+                                                className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors ${selectedRole === role
+                                                    ? 'border-blue-600 bg-blue-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="role"
+                                                    value={role}
+                                                    checked={selectedRole === role}
+                                                    onChange={(e) => setSelectedRole(e.target.value)}
+                                                    className="w-4 h-4 text-blue-600"
+                                                />
+                                                <div className="ml-3">
+                                                    <p className="font-semibold text-gray-900 capitalize">{role}</p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {role === 'client' ? 'Access client features and services' : 'Access worker features and job opportunities'}
+                                                    </p>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        onClick={handleRoleSwitch}
+                                        disabled={loading}
+                                        className="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? 'Switching...' : 'Switch Role'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <Footer />
+        </div>
+    );
+};
+
+export default Settings;

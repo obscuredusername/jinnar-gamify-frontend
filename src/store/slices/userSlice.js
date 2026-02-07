@@ -4,7 +4,7 @@ import client from '../../api/client';
 // Helper to load user from local storage
 const loadUserFromStorage = () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     if (!token) return null;
 
     // Decode token to get user info
@@ -47,7 +47,7 @@ export const loginUser = createAsyncThunk(
       }
 
       // Store token immediately
-      localStorage.setItem('token', token);
+      localStorage.setItem('authToken', token);
       console.log('Login successful, token stored');
 
       // If user data is provided in login response, use it
@@ -80,7 +80,7 @@ export const loginUser = createAsyncThunk(
       console.error('Login API Error:', error);
       console.error('Login API Error Response:', error.response);
       // Clear any existing token on error
-      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
       // Return both message and status for frontend logic
       return rejectWithValue({
         message: error.response?.data?.error || error.response?.data?.message || error.message || 'Login failed',
@@ -183,7 +183,7 @@ const userSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
     },
   },
   extraReducers: (builder) => {
@@ -243,7 +243,7 @@ const userSlice = createSlice({
       .addCase(fetchCurrentUser.rejected, (state) => {
         state.user = null;
         state.isAuthenticated = false;
-        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
       })
       // Verify User
       .addCase(verifyUser.pending, (state) => {

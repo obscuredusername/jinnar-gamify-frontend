@@ -119,7 +119,7 @@ const Header = () => {
                                                 My Videos
                                             </Link>
                                             <Link
-                                                to="/dashboard"
+                                                to="/settings"
                                                 onClick={() => setShowDropdown(false)}
                                                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                             >
@@ -176,6 +176,7 @@ const Header = () => {
                             <div className="flex flex-col gap-3">
                                 <Link to="/dashboard" onClick={closeMobileMenu} className="text-gray-700 py-2">My Dashboard</Link>
                                 <Link to="/dashboard" onClick={closeMobileMenu} className="text-gray-700 py-2">My Videos</Link>
+                                <Link to="/settings" onClick={closeMobileMenu} className="text-gray-700 py-2">Settings</Link>
                                 <button onClick={handleLogout} className="text-red-600 text-left py-2">Logout</button>
                             </div>
                             <div className="flex flex-col gap-3 mt-2">

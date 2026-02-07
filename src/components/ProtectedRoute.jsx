@@ -14,7 +14,7 @@ import PropTypes from 'prop-types';
  */
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticated, user } = useSelector((state) => state.user);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
 
     // STRICT VALIDATION: All conditions must be true
     const hasValidToken = token && token.length > 0;
@@ -43,10 +43,10 @@ const ProtectedRoute = ({ children }) => {
 
         // Clear invalid state
         if (!hasValidToken) {
-            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
         }
 
-        return <Navigate to="/signin" replace />;
+        return <Navigate to="/login" replace />;
     }
 
     console.log('✅ Access granted - User is authenticated');
