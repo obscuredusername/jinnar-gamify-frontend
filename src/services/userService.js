@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient from '../config/apiClient';
 
 export const userService = {
     // 1. Get my profile

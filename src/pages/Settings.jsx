@@ -34,7 +34,7 @@ const Settings = () => {
     const [emailChangeStep, setEmailChangeStep] = useState('initiate'); // 'initiate' or 'verify'
 
     // Role switch state
-    const [selectedRole, setSelectedRole] = useState('client');
+    const [selectedRole, setSelectedRole] = useState('buyer');
 
     // Load user profile on mount
     useEffect(() => {
@@ -43,14 +43,19 @@ const Settings = () => {
 
     const loadProfile = async () => {
         try {
-            const data = await userService.getProfile();
+            const response = await userService.getProfile();
+            // API returns { profile: { ... } }, extract the profile object
+            const data = response.profile || response;
+
+            console.log('Profile data loaded:', data);
+
             setProfileData({
                 name: data.name || '',
                 bio: data.bio || '',
                 location: data.location || '',
                 phone: data.phone || ''
             });
-            setSelectedRole(data.role || 'client');
+            setSelectedRole(data.role || 'buyer');
         } catch (error) {
             console.error('Failed to load profile:', error);
             showMessage('error', 'Failed to load profile data');
@@ -67,10 +72,19 @@ const Settings = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await userService.updateProfile(profileData);
+            // Only send fields that buyers are allowed to update
+            // Buyers can update: name, location, phone, address, country, postalCode
+            // Buyers CANNOT update: bio, skills, categories, etc. (seller-specific fields)
+            const allowedData = {
+                name: profileData.name,
+                location: profileData.location,
+                phone: profileData.phone
+            };
+
+            await userService.updateProfile(allowedData);
             showMessage('success', 'Profile updated successfully!');
         } catch (error) {
-            showMessage('error', error.response?.data?.message || 'Failed to update profile');
+            showMessage('error', error.response?.data?.error || error.response?.data?.message || 'Failed to update profile');
         } finally {
             setLoading(false);
         }
@@ -198,19 +212,6 @@ const Settings = () => {
                                             onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             placeholder="John Doe"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Bio
-                                        </label>
-                                        <textarea
-                                            value={profileData.bio}
-                                            onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
-                                            rows={4}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            placeholder="Tell us about yourself..."
                                         />
                                     </div>
 
@@ -388,7 +389,7 @@ const Settings = () => {
                                     </p>
 
                                     <div className="space-y-3">
-                                        {['client', 'worker'].map(role => (
+                                        {['buyer', 'seller'].map(role => (
                                             <label
                                                 key={role}
                                                 className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors ${selectedRole === role
@@ -407,7 +408,7 @@ const Settings = () => {
                                                 <div className="ml-3">
                                                     <p className="font-semibold text-gray-900 capitalize">{role}</p>
                                                     <p className="text-sm text-gray-600">
-                                                        {role === 'client' ? 'Access client features and services' : 'Access worker features and job opportunities'}
+                                                        {role === 'buyer' ? 'Purchase services and hire freelancers' : 'Offer services and earn money'}
                                                     </p>
                                                 </div>
                                             </label>

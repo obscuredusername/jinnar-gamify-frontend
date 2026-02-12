@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/ui/Header';
 import Footer from '../components/ui/Footer';
 import viralService from '../services/viralService';
+import { useToast } from '../contexts/ToastContext';
 import homeData from '../data/home'; // Keep for fallback data (rules, status indicators)
 
 const Home = () => {
+    const navigate = useNavigate();
+    const toast = useToast();
     // UI State
     const [activeTab, setActiveTab] = useState('weekly');
     const [uploadFile, setUploadFile] = useState(null);
@@ -81,6 +84,8 @@ const Home = () => {
 
                 if (weeklyResponse.success) {
                     setLeaderboardWeekly(weeklyResponse.data);
+                    // Use top 3 from leaderboard as featured videos
+                    setFeaturedVideos(weeklyResponse.data.slice(0, 3));
                 }
                 if (monthlyResponse.success) {
                     setLeaderboardMonthly(monthlyResponse.data);
@@ -132,9 +137,6 @@ const Home = () => {
                 const response = await viralService.getMySubmissions();
                 if (response.success) {
                     setMySubmissions(response.data);
-                    // Use featured/approved submissions as featured videos
-                    const approved = response.data.filter(s => s.status === 'approved').slice(0, 3);
-                    setFeaturedVideos(approved);
                 }
             } catch (error) {
                 console.error('Error fetching submissions:', error);
@@ -190,14 +192,14 @@ const Home = () => {
     // Handle video upload submission
     const handleVideoSubmit = async () => {
         if (!uploadFile || !activeDrawId) {
-            alert('Please select a video file and ensure a draw is active');
+            toast.warning('Please select a video file and ensure a draw is active');
             return;
         }
 
         try {
             const response = await viralService.uploadVideo(uploadFile, activeDrawId, uploadFile.name);
             if (response.success) {
-                alert('Video uploaded successfully! It will be reviewed shortly.');
+                toast.success('Video uploaded successfully! It will be reviewed shortly.');
                 setUploadFile(null);
                 // Refresh submissions
                 const submissionsResponse = await viralService.getMySubmissions();
@@ -207,7 +209,7 @@ const Home = () => {
             }
         } catch (error) {
             console.error('Error uploading video:', error);
-            alert('Failed to upload video. Please try again.');
+            toast.error('Failed to upload video. Please try again.');
         }
     };
 
@@ -456,13 +458,13 @@ const Home = () => {
                                     <button className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Global Leaderboard</button>
                                     <button
                                         onClick={() => setActiveTab('weekly')}
-                                        className={`px-3 py-1 rounded ${activeTab === 'weekly' ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                        className={`px - 3 py - 1 rounded ${activeTab === 'weekly' ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} `}
                                     >
                                         Weekly
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('monthly')}
-                                        className={`px-3 py-1 rounded ${activeTab === 'monthly' ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                        className={`px - 3 py - 1 rounded ${activeTab === 'monthly' ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} `}
                                     >
                                         Monthly
                                     </button>
@@ -607,10 +609,10 @@ const Home = () => {
                                     <div className="text-center py-2 text-gray-500 text-xs">Loading status...</div>
                                 ) : getStatusIndicators().map((indicator, index) => (
                                     <div key={index} className="flex items-start gap-2">
-                                        <span className={`text-sm ${indicator.color === 'yellow' ? 'text-yellow-600' :
+                                        <span className={`text - sm ${indicator.color === 'yellow' ? 'text-yellow-600' :
                                             indicator.color === 'green' ? 'text-green-600' :
                                                 'text-red-600'
-                                            }`}>
+                                            } `}>
                                             {indicator.icon}
                                         </span>
                                         <div>
@@ -629,29 +631,35 @@ const Home = () => {
                         <div className="bg-white rounded-lg shadow-sm p-5">
                             <h3 className="font-bold text-gray-900 mb-2">Featured Videos</h3>
                             <p className="text-xs text-gray-600 mb-4">
-                                Tom: Approved Videos — See the Best
+                                Top Performing Videos — See the Best
                             </p>
 
                             <div className="space-y-3">
-                                {homeData.featuredVideos.map((video) => (
-                                    <div key={video.id}>
-                                        <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg h-28 flex items-center justify-center mb-2">
-                                            <p className="text-gray-400 text-xs">Video Thumbnail</p>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 bg-blue-900 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                                                    #{video.rank}
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs font-semibold text-gray-900">{video.creator}</div>
-                                                    <div className="text-xs text-gray-600">{video.location}</div>
-                                                </div>
+                                {loading.leaderboard ? (
+                                    <div className="text-center py-4 text-gray-500 text-sm">Loading...</div>
+                                ) : featuredVideos.length > 0 ? (
+                                    featuredVideos.map((entry, index) => (
+                                        <div key={entry._id || index}>
+                                            <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg h-28 flex items-center justify-center mb-2">
+                                                <p className="text-gray-400 text-xs">Video Thumbnail</p>
                                             </div>
-                                            <div className="text-xs font-bold text-gray-900">{video.points.toLocaleString()} points</div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 bg-blue-900 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                                        #{entry.rank || index + 1}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-xs font-semibold text-gray-900">{entry.user?.username || entry.username || 'Anonymous'}</div>
+                                                        <div className="text-xs text-gray-600">{entry.user?.country || entry.country || 'Global'}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-xs font-bold text-gray-900">{entry.points?.toLocaleString() || entry.totalPoints?.toLocaleString() || 0} pts</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <div className="text-center py-4 text-gray-500 text-sm">No featured videos yet</div>
+                                )}
                             </div>
 
                             <Link to="/media">

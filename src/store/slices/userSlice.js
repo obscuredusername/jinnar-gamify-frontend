@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import client from '../../api/client';
+import apiClient from '../../config/apiClient';
 
 // Helper to load user from local storage
 const loadUserFromStorage = () => {
@@ -35,7 +35,7 @@ export const loginUser = createAsyncThunk(
   async (credentials, { dispatch, rejectWithValue }) => {
     try {
       console.log('Attempting login with credentials:', credentials);
-      const response = await client.post('/auth/login', credentials);
+      const response = await apiClient.post('/auth/login', credentials);
       console.log('Login API Response:', response);
       console.log('Login API Response Data:', response.data);
 
@@ -57,7 +57,7 @@ export const loginUser = createAsyncThunk(
 
       // If no user data, fetch it using the token
       // console.log('Fetching user profile...');
-      // const userResponse = await client.get('/auth/me');
+      // const userResponse = await apiClient.get('/auth/me');
       // return userResponse.data.user;
 
       // /auth/me is disabled, try to decode token to get basic user info
@@ -95,7 +95,7 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       console.log('Attempting registration with data:', userData);
-      const response = await client.post('/auth/register', userData);
+      const response = await apiClient.post('/auth/register', userData);
       console.log('Register API Response:', response);
       console.log('Register API Response Data:', response.data);
 
@@ -116,7 +116,7 @@ export const fetchCurrentUser = createAsyncThunk(
   'user/fetchMe',
   async (_, { rejectWithValue }) => {
     try {
-      // const response = await client.get('/auth/me');
+      // const response = await apiClient.get('/auth/me');
       // return response.data.user;
       console.log('/auth/me is currently disabled');
       return null;
@@ -131,7 +131,7 @@ export const verifyUser = createAsyncThunk(
   async (verificationData, { rejectWithValue }) => {
     try {
       // verificationData: { identifier, code }
-      const response = await client.post('/auth/verify', verificationData);
+      const response = await apiClient.post('/auth/verify', verificationData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.error || error.response?.data?.message || error.message);
@@ -143,7 +143,7 @@ export const resendCode = createAsyncThunk(
   'user/resendCode',
   async (identifier, { rejectWithValue }) => {
     try {
-      const response = await client.post('/auth/resend-verification', { identifier });
+      const response = await apiClient.post('/auth/resend-verification', { identifier });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.error || error.response?.data?.message || error.message);
@@ -155,7 +155,7 @@ export const forgotPassword = createAsyncThunk(
   'user/forgotPassword',
   async (identifier, { rejectWithValue }) => {
     try {
-      const response = await client.post('/auth/forgot-password', { identifier });
+      const response = await apiClient.post('/auth/forgot-password', { identifier });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.error || error.response?.data?.message || error.message);
@@ -168,7 +168,7 @@ export const resetPassword = createAsyncThunk(
   async (resetData, { rejectWithValue }) => {
     try {
       // resetData: { identifier, code, newPassword }
-      const response = await client.post('/auth/reset-password', resetData);
+      const response = await apiClient.post('/auth/reset-password', resetData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.error || error.response?.data?.message || error.message);

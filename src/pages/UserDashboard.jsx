@@ -122,9 +122,9 @@ const UserDashboard = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 flex flex-col">
                 <Header />
-                <div className="flex justify-center items-center h-[60vh]">
+                <div className="flex-1 flex justify-center items-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
                 </div>
                 <Footer />
@@ -133,10 +133,10 @@ const UserDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             <Header />
 
-            <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
                 <div className="grid lg:grid-cols-12 gap-6">
 
                     {/* Left Sidebar - Profile Card */}
@@ -314,7 +314,7 @@ const UserDashboard = () => {
                                                         <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                                             {/* Simple Icons based on type */}
                                                             <div className={`w-8 h-8 flex items-center justify-center rounded-full ${activity.type === 'approved' ? 'bg-green-100 text-green-600' :
-                                                                    activity.type === 'rejected' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'
+                                                                activity.type === 'rejected' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'
                                                                 }`}>
                                                                 {activity.type === 'approved' ? '✓' : activity.type === 'rejected' ? '✗' : '⏱'}
                                                             </div>

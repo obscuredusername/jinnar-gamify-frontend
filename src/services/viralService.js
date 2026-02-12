@@ -1,4 +1,4 @@
-import client from '../api/client';
+import apiClient from '../config/apiClient';
 
 /**
  * Viral Campaign Service
@@ -15,18 +15,13 @@ const viralService = {
      * @param {File} thumbnailFile - Optional thumbnail file
      * @returns {Promise} Response with submission details
      */
-    uploadVideo: async (videoFile, drawId, title, thumbnailFile = null) => {
+    uploadVideo: async (videoFile, drawId, title) => {
         const formData = new FormData();
         formData.append('video', videoFile);
         formData.append('drawId', drawId);
         formData.append('title', title);
 
-        // Add thumbnail if provided
-        if (thumbnailFile) {
-            formData.append('thumbnail', thumbnailFile);
-        }
-
-        const response = await client.post('/viral/submissions', formData, {
+        const response = await apiClient.post('/viral/submissions', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -44,7 +39,7 @@ const viralService = {
         const formData = new FormData();
         formData.append('thumbnail', thumbnailFile);
 
-        const response = await client.post(`/viral/submissions/${submissionId}/thumbnail`, formData, {
+        const response = await apiClient.post(`/viral/submissions/${submissionId}/thumbnail`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -57,7 +52,7 @@ const viralService = {
      * @returns {Promise} Array of user submissions
      */
     getMySubmissions: async () => {
-        const response = await client.get('/viral/submissions/me');
+        const response = await apiClient.get('/viral/submissions/me');
         return response.data;
     },
 
@@ -81,7 +76,7 @@ const viralService = {
             formData.append('screenshot', screenshot);
         }
 
-        const response = await client.post('/viral/posts', formData, {
+        const response = await apiClient.post('/viral/posts', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -97,9 +92,19 @@ const viralService = {
      * @returns {Promise} Array of draws
      */
     getDraws: async (status = 'active') => {
-        const response = await client.get('/viral/draws', {
+        const response = await apiClient.get('/viral/draws', {
             params: { status },
         });
+        return response.data;
+    },
+
+    /**
+     * Get a single draw by ID
+     * @param {string} drawId - The ID of the draw
+     * @returns {Promise} Draw details including title, prizePool, status, remainingTime
+     */
+    getSingleDraw: async (drawId) => {
+        const response = await apiClient.get(`/viral/draws/${drawId}`);
         return response.data;
     },
 
@@ -109,7 +114,7 @@ const viralService = {
      * @returns {Promise} Array of winners with ranks and rewards
      */
     getDrawWinners: async (drawId) => {
-        const response = await client.get(`/viral/draws/${drawId}/winners`);
+        const response = await apiClient.get(`/viral/draws/${drawId}/winners`);
         return response.data;
     },
 
@@ -128,7 +133,7 @@ const viralService = {
             params.drawId = drawId;
         }
 
-        const response = await client.get('/viral/leaderboard', { params });
+        const response = await apiClient.get('/viral/leaderboard', { params });
         return response.data;
     },
 
@@ -138,7 +143,7 @@ const viralService = {
      * @returns {Promise} User's rank data (global, country, city)
      */
     getMyRank: async (drawId) => {
-        const response = await client.get('/viral/leaderboard/me', {
+        const response = await apiClient.get('/viral/leaderboard/me', {
             params: { drawId },
         });
         return response.data;
@@ -151,7 +156,7 @@ const viralService = {
      * @returns {Promise} Points data with platform breakdown
      */
     getMyPoints: async () => {
-        const response = await client.get('/viral/points/me');
+        const response = await apiClient.get('/viral/points/me');
         return response.data;
     },
 
@@ -162,7 +167,7 @@ const viralService = {
      * @returns {Promise} Array of rewards
      */
     getMyRewards: async () => {
-        const response = await client.get('/viral/rewards/me');
+        const response = await apiClient.get('/viral/rewards/me');
         return response.data;
     },
 
@@ -173,7 +178,7 @@ const viralService = {
      * @returns {Promise} Array of announcements
      */
     getAnnouncements: async () => {
-        const response = await client.get('/viral/announcements');
+        const response = await apiClient.get('/viral/announcements');
         return response.data;
     },
 
@@ -239,6 +244,39 @@ const viralService = {
      */
     getCityLeaderboard: async (drawId, limit = 50) => {
         return viralService.getLeaderboard(drawId, 'city', limit);
+    },
+
+    // ==================== DRAW LIFECYCLE ====================
+
+    /**
+     * Archive a draw
+     * @param {string} drawId - The ID of the draw to archive
+     * @returns {Promise} Response with success message
+     */
+    archiveDraw: async (drawId) => {
+        const response = await apiClient.post(`/viral/draws/${drawId}/archive`);
+        return response.data;
+    },
+
+    /**
+     * Unarchive a draw
+     * @param {string} drawId - The ID of the draw to unarchive
+     * @returns {Promise} Response with success message
+     */
+    unarchiveDraw: async (drawId) => {
+        const response = await apiClient.post(`/viral/draws/${drawId}/unarchive`);
+        return response.data;
+    },
+
+    // ==================== PARTICIPANTS ====================
+
+    /**
+     * Get participants in the latest draw
+     * @returns {Promise} Array of participants with username, points, submission date
+     */
+    getLatestParticipants: async () => {
+        const response = await apiClient.get('/viral/draws/latest/participants');
+        return response.data;
     },
 };
 

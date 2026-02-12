@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 // Get the API base URL with detailed logging
-const apiBaseURL = import.meta.env.VITE_API_BASE_URL || '/api';
+const apiBaseURL = import.meta.env.VITE_API_URL;
 console.log('🔧 API Client Configuration:');
 console.log('  - Base URL:', apiBaseURL);
 console.log('  - Environment:', import.meta.env.MODE);
-console.log('  - VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+console.log('  - VITE_API_URL:', import.meta.env.VITE_API_URL);
 
 const client = axios.create({
   baseURL: apiBaseURL,

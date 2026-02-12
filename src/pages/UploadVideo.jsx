@@ -3,14 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/ui/Header';
 import Footer from '../components/ui/Footer';
 import viralService from '../services/viralService';
+import { useToast } from '../contexts/ToastContext';
 
 const UploadVideo = () => {
     const navigate = useNavigate();
+    const toast = useToast();
 
     // UI State
     const [dragActive, setDragActive] = useState(false);
     const [uploadedFile, setUploadedFile] = useState(null);
-    const [thumbnailFile, setThumbnailFile] = useState(null);
     const [selectedDraw, setSelectedDraw] = useState('');
     const [videoTitle, setVideoTitle] = useState('');
     const [videoDescription, setVideoDescription] = useState('');
@@ -35,7 +36,7 @@ const UploadVideo = () => {
                 }
             } catch (error) {
                 console.error('Error fetching draws:', error);
-                alert('Failed to load active draws. Please refresh the page.');
+                toast.error('Failed to load active draws. Please refresh the page.');
             } finally {
                 setLoading(false);
             }
@@ -68,7 +69,7 @@ const UploadVideo = () => {
                     setVideoTitle(file.name.replace(/\.[^/.]+$/, ''));
                 }
             } else {
-                alert('Please upload a video file');
+                toast.warning('Please upload a video file');
             }
         }
     };
@@ -88,22 +89,11 @@ const UploadVideo = () => {
         }
     };
 
-    const handleThumbnailChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            if (file.type.startsWith('image/')) {
-                setThumbnailFile(file);
-            } else {
-                alert('Please upload an image file for the thumbnail');
-            }
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!uploadedFile || !selectedDraw || !agreedToTerms) {
-            alert('Please fill in all required fields');
+            toast.warning('Please fill in all required fields');
             return;
         }
 
@@ -111,19 +101,17 @@ const UploadVideo = () => {
         setUploadProgress(0);
 
         try {
-            // Upload video with thumbnail
+            // Upload video
             const response = await viralService.uploadVideo(
                 uploadedFile,
                 selectedDraw,
-                videoTitle || uploadedFile.name,
-                thumbnailFile
+                videoTitle || uploadedFile.name
             );
 
             if (response.success) {
-                alert('Video submitted successfully! It will be reviewed shortly.');
+                toast.success('Video submitted successfully! It will be reviewed shortly.');
                 // Reset form
                 setUploadedFile(null);
-                setThumbnailFile(null);
                 setVideoTitle('');
                 setVideoDescription('');
                 setAgreedToTerms(false);
@@ -136,7 +124,7 @@ const UploadVideo = () => {
             }
         } catch (error) {
             console.error('Error uploading video:', error);
-            alert('Failed to upload video. Please try again.');
+            toast.error('Failed to upload video. Please try again.');
         } finally {
             setUploading(false);
             setUploadProgress(0);
@@ -326,13 +314,13 @@ const UploadVideo = () => {
                                         )}
                                     </div>
 
-                                    {/* Step 3: Video Details & Thumbnail */}
+                                    {/* Step 3: Video Details */}
                                     <div className="bg-white rounded-xl shadow-md p-6">
                                         <div className="flex items-center gap-3 mb-4">
                                             <div className="w-8 h-8 bg-blue-800 text-white rounded-full flex items-center justify-center font-bold">
                                                 3
                                             </div>
-                                            <h2 className="text-xl font-bold text-gray-900">Video Details & Thumbnail</h2>
+                                            <h2 className="text-xl font-bold text-gray-900">Video Details</h2>
                                         </div>
 
                                         <div className="space-y-4">
@@ -361,42 +349,6 @@ const UploadVideo = () => {
                                                     placeholder="Brief description of your video content..."
                                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 ></textarea>
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                    Video Thumbnail (Optional)
-                                                </label>
-                                                <div className="flex items-center gap-4">
-                                                    <label className="flex-1 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
-                                                        <div className="flex items-center gap-2">
-                                                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                            </svg>
-                                                            <span className="text-sm text-gray-600">
-                                                                {thumbnailFile ? thumbnailFile.name : 'Choose thumbnail image'}
-                                                            </span>
-                                                        </div>
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={handleThumbnailChange}
-                                                            className="hidden"
-                                                        />
-                                                    </label>
-                                                    {thumbnailFile && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setThumbnailFile(null)}
-                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        >
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
-                                                </div>
-                                                <p className="text-xs text-gray-500 mt-1">Recommended: 1280x720px, JPG or PNG</p>
                                             </div>
                                         </div>
                                     </div>

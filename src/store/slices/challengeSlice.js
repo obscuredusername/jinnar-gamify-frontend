@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import client from '../../api/client';
+import apiClient from '../../config/apiClient';
 
 const initialState = {
   challenges: [],
@@ -12,7 +12,7 @@ export const fetchChallenges = createAsyncThunk(
   'challenges/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await client.get('/challenges');
+      const response = await apiClient.get('/challenges');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
