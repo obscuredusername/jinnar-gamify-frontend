@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Header from '../components/ui/Header';
 import Footer from '../components/ui/Footer';
 import viralService from '../services/viralService';
@@ -9,6 +10,7 @@ import homeData from '../data/home'; // Keep for fallback data (rules, status in
 const Home = () => {
     const navigate = useNavigate();
     const toast = useToast();
+    const { isAuthenticated } = useSelector((state) => state.user);
     // UI State
     const [activeTab, setActiveTab] = useState('weekly');
     const [uploadFile, setUploadFile] = useState(null);
@@ -132,6 +134,8 @@ const Home = () => {
 
     // Fetch user submissions
     useEffect(() => {
+        if (!isAuthenticated) return;
+
         const fetchSubmissions = async () => {
             try {
                 const response = await viralService.getMySubmissions();
@@ -146,7 +150,7 @@ const Home = () => {
         };
 
         fetchSubmissions();
-    }, []);
+    }, [isAuthenticated]);
 
     // Calculate countdown to a target date
     const calculateCountdown = (targetDate) => {
@@ -695,9 +699,9 @@ const Home = () => {
                                 </ul>
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-4">
                                 {homeData.rulesAndStandards.links.map((link, index) => (
-                                    <Link key={index} to="/rules">
+                                    <Link key={index} to="/rules" className="block">
                                         <button className="w-full bg-blue-800 hover:bg-blue-900 text-white text-xs font-semibold py-2 rounded transition-colors flex items-center justify-between px-3">
                                             {link.text}
                                             <span>→</span>

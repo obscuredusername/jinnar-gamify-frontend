@@ -49,127 +49,125 @@ const Header = () => {
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-8">
-                    {isAuthenticated ? (
-                        <>
-                            <div className="flex gap-6">
-                                {navLinks.map((link) => (
-                                    <Link
-                                        key={link.path}
-                                        to={link.path}
-                                        className={`text-sm font-medium transition-colors ${isActive(link.path)
-                                            ? 'text-blue-800 border-b-2 border-blue-800 pb-1'
-                                            : 'text-gray-700 hover:text-blue-800'
-                                            }`}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ))}
-                            </div>
+                    <div className="flex gap-6">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.path}
+                                to={link.path}
+                                className={`text-sm font-medium transition-colors ${isActive(link.path)
+                                    ? 'text-blue-800 border-b-2 border-blue-800 pb-1'
+                                    : 'text-gray-700 hover:text-blue-800'
+                                    }`}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </div>
 
-                            <div className="flex gap-4 items-center">
+                    {isAuthenticated ? (
+                        <div className="flex gap-4 items-center">
+                            <button
+                                onClick={() => navigate('/challenge')}
+                                className="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-2 px-6 rounded-md transition-colors"
+                            >
+                                Join Active Draw
+                            </button>
+                            <button
+                                onClick={() => navigate('/upload')}
+                                className="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded-md flex items-center gap-2 transition-colors"
+                            >
+                                Upload Video
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+
+                            {/* Profile Avatar Dropdown */}
+                            <div className="relative">
                                 <button
-                                    onClick={() => navigate('/challenge')}
-                                    className="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-2 px-6 rounded-md transition-colors"
+                                    onClick={() => setShowDropdown(!showDropdown)}
+                                    className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    Join Active Draw
-                                </button>
-                                <button
-                                    onClick={() => navigate('/upload')}
-                                    className="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded-md flex items-center gap-2 transition-colors"
-                                >
-                                    Upload Video
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
                                 </button>
 
-                                {/* Profile Avatar Dropdown */}
-                                <div className="relative">
-                                    <button
-                                        onClick={() => setShowDropdown(!showDropdown)}
-                                        className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    </button>
-
-                                    {showDropdown && (
-                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
-                                            <div className="px-4 py-2 border-b border-gray-200">
-                                                <p className="text-sm font-semibold text-gray-900">
-                                                    {user?.name || user?.email || 'User'}
-                                                </p>
-                                                {user?.email && (
-                                                    <p className="text-xs text-gray-500">{user.email}</p>
-                                                )}
-                                            </div>
-                                            <Link
-                                                to="/dashboard"
-                                                onClick={() => setShowDropdown(false)}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                            >
-                                                My Dashboard
-                                            </Link>
-                                            <Link
-                                                to="/dashboard"
-                                                onClick={() => setShowDropdown(false)}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                            >
-                                                My Videos
-                                            </Link>
-                                            <Link
-                                                to="/settings"
-                                                onClick={() => setShowDropdown(false)}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                            >
-                                                Settings
-                                            </Link>
-                                            {(user?.role === 'admin' || user?.isAdmin) && (
-                                                <>
-                                                    <div className="border-t border-gray-200 my-1"></div>
-                                                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Admin</div>
-                                                    <Link
-                                                        to="/admin/draws"
-                                                        onClick={() => setShowDropdown(false)}
-                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                                    >
-                                                        🎯 Manage Draws
-                                                    </Link>
-                                                    <Link
-                                                        to="/admin/submissions"
-                                                        onClick={() => setShowDropdown(false)}
-                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                                    >
-                                                        📋 Review Submissions
-                                                    </Link>
-                                                    <Link
-                                                        to="/admin/posts"
-                                                        onClick={() => setShowDropdown(false)}
-                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                                    >
-                                                        📊 Manage Posts
-                                                    </Link>
-                                                    <Link
-                                                        to="/admin/participants"
-                                                        onClick={() => setShowDropdown(false)}
-                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                                    >
-                                                        👥 View Participants
-                                                    </Link>
-                                                </>
+                                {showDropdown && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
+                                        <div className="px-4 py-2 border-b border-gray-200">
+                                            <p className="text-sm font-semibold text-gray-900">
+                                                {user?.name || user?.email || 'User'}
+                                            </p>
+                                            {user?.email && (
+                                                <p className="text-xs text-gray-500">{user.email}</p>
                                             )}
-                                            <button
-                                                onClick={handleLogout}
-                                                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                            >
-                                                Logout
-                                            </button>
                                         </div>
-                                    )}
-                                </div>
+                                        <Link
+                                            to="/dashboard"
+                                            onClick={() => setShowDropdown(false)}
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        >
+                                            My Dashboard
+                                        </Link>
+                                        <Link
+                                            to="/dashboard"
+                                            onClick={() => setShowDropdown(false)}
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        >
+                                            My Videos
+                                        </Link>
+                                        <Link
+                                            to="/settings"
+                                            onClick={() => setShowDropdown(false)}
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        >
+                                            Settings
+                                        </Link>
+                                        {(user?.role === 'admin' || user?.isAdmin) && (
+                                            <>
+                                                <div className="border-t border-gray-200 my-1"></div>
+                                                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Admin</div>
+                                                <Link
+                                                    to="/admin/draws"
+                                                    onClick={() => setShowDropdown(false)}
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                                                >
+                                                    🎯 Manage Draws
+                                                </Link>
+                                                <Link
+                                                    to="/admin/submissions"
+                                                    onClick={() => setShowDropdown(false)}
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                                                >
+                                                    📋 Review Submissions
+                                                </Link>
+                                                <Link
+                                                    to="/admin/posts"
+                                                    onClick={() => setShowDropdown(false)}
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                                                >
+                                                    📊 Manage Posts
+                                                </Link>
+                                                <Link
+                                                    to="/admin/participants"
+                                                    onClick={() => setShowDropdown(false)}
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                                                >
+                                                    👥 View Participants
+                                                </Link>
+                                            </>
+                                        )}
+                                        <button
+                                            onClick={handleLogout}
+                                            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                        </>
+                        </div>
                     ) : (
                         <div className="flex gap-4">
                             <button
@@ -192,21 +190,22 @@ const Header = () => {
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
                 <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 py-4 px-6 flex flex-col gap-4">
+                    <div className="flex flex-col gap-3">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.path}
+                                to={link.path}
+                                onClick={closeMobileMenu}
+                                className={`text-base font-medium py-2 ${isActive(link.path) ? 'text-blue-800' : 'text-gray-700'}`}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </div>
+                    <hr className="border-gray-100" />
+
                     {isAuthenticated ? (
                         <>
-                            <div className="flex flex-col gap-3">
-                                {navLinks.map((link) => (
-                                    <Link
-                                        key={link.path}
-                                        to={link.path}
-                                        onClick={closeMobileMenu}
-                                        className={`text-base font-medium py-2 ${isActive(link.path) ? 'text-blue-800' : 'text-gray-700'}`}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ))}
-                            </div>
-                            <hr className="border-gray-100" />
                             <div className="flex flex-col gap-3">
                                 <Link to="/dashboard" onClick={closeMobileMenu} className="text-gray-700 py-2">My Dashboard</Link>
                                 <Link to="/dashboard" onClick={closeMobileMenu} className="text-gray-700 py-2">My Videos</Link>

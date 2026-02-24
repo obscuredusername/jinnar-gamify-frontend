@@ -41,6 +41,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/login" element={<SignIn />} />
+          <Route path="/register" element={<SignUp />} />
           {/* Keep old routes for backward compatibility */}
           <Route path="/signin" element={<Navigate to="/login" replace />} />
           <Route path="/signup" element={<Navigate to="/register" replace />} />
