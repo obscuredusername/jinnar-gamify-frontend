@@ -20,14 +20,20 @@ const Header = () => {
         setIsMobileMenuOpen(false);
     };
 
+    // Hide header on auth pages
+    const authPaths = ['/login', '/register', '/signin', '/signup', '/verify', '/forgot-password', '/reset-password'];
+    if (authPaths.includes(location.pathname)) {
+        return null;
+    }
+
     const isActive = (path) => location.pathname === path;
 
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
     const navLinks = [
-        { path: '/home', label: 'Home' },
+        { path: '/challenge', label: 'Viral Challenge' },
         { path: '/leaderboards', label: 'Leaderboards' },
-        { path: '/rules', label: 'Rules and Agreement' },
+        { path: '/rules', label: 'Rules' },
         { path: '/announcements', label: 'Announcements' },
         { path: '/faq', label: 'FAQ' },
     ];

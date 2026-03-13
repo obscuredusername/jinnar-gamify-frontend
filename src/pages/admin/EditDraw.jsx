@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Header from '../../components/ui/Header';
-import Footer from '../../components/ui/Footer';
 import adminService from '../../services/adminService';
 import viralService from '../../services/viralService';
 
@@ -118,21 +116,18 @@ const EditDraw = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col">
-                <Header />
                 <div className="flex-1 max-w-4xl mx-auto px-6 py-8 w-full">
                     <div className="text-center py-12">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-800"></div>
                         <p className="mt-4 text-gray-600">Loading draw details...</p>
                     </div>
                 </div>
-                <Footer />
             </div>
         );
     }
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <Header />
 
             <div className="flex-1 max-w-4xl mx-auto px-6 py-8 w-full">
                 {/* Page Header */}
@@ -304,7 +299,6 @@ const EditDraw = () => {
                 </form>
             </div>
 
-            <Footer />
         </div>
     );
 };

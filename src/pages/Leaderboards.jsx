@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import viralService from '../services/viralService';
 
 const Leaderboards = () => {
@@ -97,7 +95,6 @@ const Leaderboards = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
 
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-12 px-6 relative overflow-hidden">
@@ -349,7 +346,6 @@ const Leaderboards = () => {
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 };

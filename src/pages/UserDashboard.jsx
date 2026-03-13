@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/userSlice';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import viralService from '../services/viralService';
 import { formatDate } from '../utils/format';
 
@@ -123,18 +121,15 @@ const UserDashboard = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col">
-                <Header />
                 <div className="flex-1 flex justify-center items-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
                 </div>
-                <Footer />
             </div>
         );
     }
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <Header />
 
             <div className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
                 <div className="grid lg:grid-cols-12 gap-6">
@@ -439,7 +434,6 @@ const UserDashboard = () => {
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 };

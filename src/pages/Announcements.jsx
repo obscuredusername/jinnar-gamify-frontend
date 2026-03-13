@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import announcementsData from '../data/announcements'; // Fallback data
 import viralService from '../services/viralService';
 import { getCategoryColors } from '../utils/colors';
@@ -44,7 +42,6 @@ const Announcements = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
 
             <div className="bg-blue-900 text-white py-12 px-6">
                 <div className="max-w-7xl mx-auto">
@@ -127,7 +124,6 @@ const Announcements = () => {
                 )}
             </div>
 
-            <Footer />
         </div>
     );
 };

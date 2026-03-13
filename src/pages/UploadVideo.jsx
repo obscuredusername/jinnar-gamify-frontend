@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import viralService from '../services/viralService';
 import { useToast } from '../contexts/ToastContext';
 
@@ -133,7 +131,6 @@ const UploadVideo = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
 
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-blue-900 via-purple-900 to-blue-900 text-white py-12 px-6">
@@ -539,7 +536,6 @@ const UploadVideo = () => {
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 };

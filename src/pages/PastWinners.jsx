@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import viralService from '../services/viralService';
 import { PlayIcon, FilterIcon, ChevronRightIcon } from '../components/ui/Icons';
 import { formatNumber } from '../utils/format';
@@ -59,7 +57,6 @@ const PastWinners = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
 
             {/* Hero / Top Section */}
             <div className="bg-white border-b border-gray-200 pt-12 pb-16 px-6 relative overflow-hidden">
@@ -165,7 +162,6 @@ const PastWinners = () => {
                 )}
             </div>
 
-            <Footer />
         </div>
     );
 };

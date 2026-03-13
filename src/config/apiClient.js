@@ -60,10 +60,10 @@ apiClient.interceptors.response.use(
         return response;
     },
     (error) => {
-        // Handle 401 Unauthorized
         if (error.response?.status === 401) {
             localStorage.removeItem('authToken');
-            window.location.href = '/login';
+            // Removed global redirect to prevent public pages from forcing login
+            // ProtectedRoute will handle redirects for authenticated-only routes
         }
 
         // Log errors

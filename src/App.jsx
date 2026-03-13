@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import Home from './pages/Home';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
-import VerifyAccount from './pages/VerifyAccount';
 import JinnarChallenge from './pages/JinnarChallenge';
 import FAQ from './pages/FAQ';
 import Rules from './pages/Rules';
@@ -27,10 +26,10 @@ import ManageRewards from './pages/admin/ManageRewards';
 import AdminSubmissions from './pages/admin/AdminSubmissions';
 import AdminPosts from './pages/admin/AdminPosts';
 import DrawParticipants from './pages/admin/DrawParticipants';
-import ApiTest from './pages/ApiTest';
+import Header from './components/ui/Header';
+import Footer from './components/ui/Footer';
 import { ToastProvider } from './contexts/ToastContext';
-
-
+import ApiTest from './pages/ApiTest';
 
 function App() {
   const { isAuthenticated } = useSelector((state) => state.user);
@@ -38,6 +37,7 @@ function App() {
   return (
     <ToastProvider>
       <Router>
+        <Header />
         <Routes>
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<Home />} />
@@ -46,7 +46,6 @@ function App() {
           {/* Keep old routes for backward compatibility */}
           <Route path="/signin" element={<Navigate to="/login" replace />} />
           <Route path="/signup" element={<Navigate to="/register" replace />} />
-          <Route path="/verify" element={<VerifyAccount />} />
           <Route path="/challenge" element={<JinnarChallenge />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/rules" element={<Rules />} />
@@ -154,6 +153,7 @@ function App() {
           {/* API Test Route */}
           <Route path="/api-test" element={<ApiTest />} />
         </Routes >
+        <Footer />
       </Router >
     </ToastProvider>
   );

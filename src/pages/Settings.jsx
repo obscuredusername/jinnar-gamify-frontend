@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import userService from '../services/userService';
 import authService from '../services/authService';
 
@@ -160,7 +158,6 @@ const Settings = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <Header />
 
             <div className="flex-1 max-w-5xl mx-auto px-6 py-8 w-full">
                 <div className="mb-6">
@@ -429,7 +426,6 @@ const Settings = () => {
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 };

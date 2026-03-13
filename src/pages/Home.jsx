@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import viralService from '../services/viralService';
 import { useToast } from '../contexts/ToastContext';
 import homeData from '../data/home'; // Keep for fallback data (rules, status indicators)
@@ -271,8 +269,6 @@ const Home = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
-
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-8 px-6 relative overflow-hidden">
                 {/* Decorative elements */}
@@ -712,10 +708,9 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <Footer />
-        </div>
+            </div >
+        </div >
     );
 };
 

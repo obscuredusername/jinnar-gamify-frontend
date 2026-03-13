@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../../components/ui/Header';
-import Footer from '../../components/ui/Footer';
 import adminService from '../../services/adminService';
 
 const CreateDraw = () => {
@@ -73,7 +71,6 @@ const CreateDraw = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <Header />
 
             <div className="flex-1 max-w-4xl mx-auto px-6 py-8 w-full">
                 {/* Page Header */}
@@ -247,7 +244,6 @@ const CreateDraw = () => {
                 </form>
             </div>
 
-            <Footer />
         </div>
     );
 };

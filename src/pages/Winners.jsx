@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import { TrophyIcon } from '../components/ui/Icons';
 import { formatNumber, formatCurrency } from '../utils/format';
 import viralService from '../services/viralService';
@@ -59,7 +57,6 @@ const Winners = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
 
             {/* Hero */}
             <div className="bg-gradient-to-br from-yellow-500 to-orange-600 text-white py-16 px-6">
@@ -165,7 +162,6 @@ const Winners = () => {
                 )}
             </div>
 
-            <Footer />
         </div>
     );
 };

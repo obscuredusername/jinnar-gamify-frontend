@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import mediaData from '../data/media';
 import {
     PlayIcon,
@@ -30,7 +28,6 @@ const MediaHighlights = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
 
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-purple-900 via-blue-800 to-teal-700 text-white py-16 px-6">
@@ -283,7 +280,6 @@ const MediaHighlights = () => {
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 };

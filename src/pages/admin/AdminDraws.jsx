@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../../components/ui/Header';
-import Footer from '../../components/ui/Footer';
 import adminService from '../../services/adminService';
 import viralService from '../../services/viralService';
 import { useToast } from '../../contexts/ToastContext';
@@ -102,7 +100,6 @@ const AdminDraws = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <Header />
 
             <div className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
                 {/* Page Header */}
@@ -266,7 +263,6 @@ const AdminDraws = () => {
                 )}
             </div>
 
-            <Footer />
         </div>
     );
 };

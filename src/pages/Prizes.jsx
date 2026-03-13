@@ -1,6 +1,4 @@
 import React from 'react';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import { TrophyIcon, GiftIcon, CurrencyDollarIcon, StarIcon } from '../components/ui/Icons';
 
 // We need to add GiftIcon, CurrencyDollarIcon, StarIcon to Icons.jsx first, 
@@ -11,7 +9,6 @@ import { TrophyIcon, GiftIcon, CurrencyDollarIcon, StarIcon } from '../component
 const Prizes = () => {
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
 
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 text-white py-20 px-6">
@@ -136,7 +133,6 @@ const Prizes = () => {
 
             </div>
 
-            <Footer />
         </div>
     );
 };

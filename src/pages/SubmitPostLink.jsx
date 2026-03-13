@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import viralService from '../services/viralService';
 
 const SubmitPostLink = () => {
@@ -97,7 +95,6 @@ const SubmitPostLink = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
 
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-purple-900 via-pink-900 to-purple-900 text-white py-12 px-6">
@@ -321,7 +318,6 @@ const SubmitPostLink = () => {
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 };

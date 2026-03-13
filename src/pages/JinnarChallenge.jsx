@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/ui/Header';
-import Footer from '../components/ui/Footer';
 import challengeData from '../data/jinnarChallenge';
 import { faqData } from '../data/FAQ';
 import viralService from '../services/viralService';
@@ -54,8 +52,6 @@ const JinnarChallenge = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Header */}
-            <Header />
 
             {/* Main Content */}
             <div className="max-w-6xl mx-auto px-6 py-12">
@@ -369,8 +365,6 @@ const JinnarChallenge = () => {
                 </div>
             </div>
 
-            {/* Footer */}
-            <Footer />
         </div>
     );
 };
