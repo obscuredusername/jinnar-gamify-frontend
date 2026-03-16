@@ -104,13 +104,13 @@ const AdminDraws = () => {
             <div className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
                 {/* Page Header */}
                 <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Panel - Draw Management</h1>
                             <p className="text-gray-600">Create, edit, and manage lucky draws for the Jinnar Viral Challenge</p>
                         </div>
-                        <Link to="/admin/draws/create">
-                            <button className="bg-gradient-to-r from-blue-800 to-blue-900 hover:from-blue-900 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center gap-2">
+                        <Link to="/admin/draws/create" className="w-full md:w-auto">
+                            <button className="w-full md:w-auto bg-gradient-to-r from-blue-800 to-blue-900 hover:from-blue-900 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2">
                                 <span className="text-xl">+</span>
                                 Create New Draw
                             </button>
@@ -118,7 +118,7 @@ const AdminDraws = () => {
                     </div>
 
                     {/* Tab Navigation */}
-                    <div className="flex gap-2 border-b border-gray-200">
+                    <div className="flex gap-2 border-b border-gray-200 overflow-x-auto pb-1 scrollbar-hide">
                         {['all', 'active', 'upcoming', 'completed'].map((tab) => (
                             <button
                                 key={tab}

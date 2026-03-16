@@ -66,13 +66,13 @@ const DrawParticipants = () => {
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="mb-8 flex justify-between items-center">
+                <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">Draw Participants</h1>
                         {drawInfo && (
-                            <p className="text-blue-600 font-medium">
+                            <p className="text-blue-600 font-medium leading-relaxed">
                                 Active Draw: <span className="text-gray-900 font-bold">{drawInfo.title}</span>
-                                <span className="ml-2 text-gray-500 text-sm">
+                                <span className="block md:inline md:ml-2 text-gray-500 text-sm">
                                     ({new Date(drawInfo.startDate).toLocaleDateString()} - {new Date(drawInfo.endDate).toLocaleDateString()})
                                 </span>
                             </p>
@@ -81,7 +81,7 @@ const DrawParticipants = () => {
                     <button
                         onClick={exportToCSV}
                         disabled={participants.length === 0}
-                        className="bg-blue-800 hover:bg-blue-900 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full md:w-auto bg-blue-800 hover:bg-blue-900 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-center"
                     >
                         Export CSV
                     </button>
@@ -122,7 +122,7 @@ const DrawParticipants = () => {
                         <p className="text-gray-500 text-lg">No participants found</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
                         <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
                             <p className="text-sm text-gray-600">
                                 Total Participants: <span className="font-semibold text-gray-900">{participants.length}</span>

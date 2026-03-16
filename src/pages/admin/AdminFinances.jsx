@@ -78,16 +78,16 @@ const AdminFinances = () => {
     return (
         <div className="min-h-screen bg-gray-50 p-6 md:p-8">
             <div className="max-w-7xl mx-auto">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Financial Insights</h1>
                         <p className="text-gray-600">Monitor cash flow, payouts, and platform revenue</p>
                     </div>
                     <button
                         onClick={loadFinancialData}
-                        className="p-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                        className="w-fit p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
                     >
-                        <ArrowPathIcon className={`w-5 h-5 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
+                        <ArrowPathIcon className={`w-6 h-6 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
                     </button>
                 </div>
 
@@ -190,21 +190,21 @@ const AdminFinances = () => {
                     </div>
 
                     {/* Pagination */}
-                    <div className="px-8 py-5 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
-                        <span className="text-sm text-gray-500">Showing page {page}</span>
-                        <div className="flex items-center gap-2">
+                    <div className="px-6 md:px-8 py-5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30">
+                        <span className="text-sm text-gray-500 order-2 sm:order-1">Showing page {page}</span>
+                        <div className="flex items-center gap-2 order-1 sm:order-2 w-full sm:w-auto">
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="px-4 py-2 border border-gray-200 rounded-xl hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all font-medium text-gray-700"
+                                className="flex-1 sm:flex-none px-6 py-2 border border-gray-200 rounded-xl hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all font-medium text-gray-700 bg-white"
                             >
                                 Previous
                             </button>
                             <button
                                 onClick={() => setPage(p => p + 1)}
-                                className="px-4 py-2 bg-white border border-gray-200 rounded-xl hover:shadow-sm transition-all font-medium text-gray-700"
+                                className="flex-1 sm:flex-none px-6 py-2 bg-white border border-gray-200 rounded-xl hover:shadow-sm transition-all font-medium text-gray-700"
                             >
-                                Next Page
+                                Next
                             </button>
                         </div>
                     </div>

@@ -4,7 +4,6 @@ import { useDispatch } from 'react-redux';
 import { loginAdmin } from '../../store/slices/userSlice';
 import adminService from '../../services/adminService';
 import { Button, Input } from '../../components/ui';
-import logoImage from '../../assets/images/jinnar-viral-logo.png';
 import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 const AdminLogin = () => {
@@ -57,11 +56,6 @@ const AdminLogin = () => {
 
             <div className="max-w-md w-full relative z-10">
                 <div className="text-center mb-8">
-                    <img
-                        src={logoImage}
-                        alt="Jinnar Viral"
-                        className="h-16 w-auto mx-auto mb-6 brightness-0 invert"
-                    />
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4">
                         <ShieldCheckIcon className="w-4 h-4" />
                         Administration Portal

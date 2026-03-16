@@ -86,9 +86,11 @@ const AdminSubmissions = () => {
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Submission Review</h1>
-                    <p className="text-gray-600">Review and approve user submissions</p>
+                <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Submission Review</h1>
+                        <p className="text-gray-600">Review and approve user submissions</p>
+                    </div>
                 </div>
 
                 {/* Filters */}
@@ -120,7 +122,7 @@ const AdminSubmissions = () => {
                         <p className="text-gray-500 text-lg">No submissions found</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>

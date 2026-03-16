@@ -92,27 +92,27 @@ const AdminUsers = () => {
     return (
         <div className="min-h-screen bg-gray-50 p-6 md:p-8">
             <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
                         <p className="text-gray-600">Approve, reject, or suspend platform participants</p>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="relative">
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <div className="relative w-full sm:w-64">
                             <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
                                 placeholder="Search users..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-64 bg-white"
+                                className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full bg-white"
                             />
                         </div>
                         <select
                             value={filter}
                             onChange={(e) => setFilter(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-gray-700"
+                            className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-gray-700"
                         >
                             <option value="all">All Users</option>
                             <option value="pending">Pending Only</option>
@@ -122,7 +122,7 @@ const AdminUsers = () => {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
