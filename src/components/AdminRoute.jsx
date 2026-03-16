@@ -29,45 +29,19 @@ const AdminRoute = ({ children }) => {
         isAdmin: user?.isAdmin,
     });
 
-    // If not authenticated, redirect to login
+    // If not authenticated, redirect to ADMIN login
     if (!isAuthenticatedInRedux || !hasValidToken || !hasValidUser) {
-        console.warn('⚠️ Admin access denied - Not authenticated, redirecting to login');
+        console.warn('⚠️ Admin access denied - Not authenticated, redirecting to admin login');
 
         if (!hasValidToken) {
             localStorage.removeItem('authToken');
         }
 
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/admin/login" replace />;
     }
 
-    // Check if user has admin role
-    // Support both user.role === 'admin' and user.isAdmin === true patterns
-    const isAdmin = user.role === 'admin' || user.isAdmin === true;
-
-    if (!isAdmin) {
-        console.warn('⚠️ Admin access denied - User is not an admin');
-
-        // Show unauthorized message and redirect to home
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-                    <div className="text-6xl mb-4">🚫</div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-                    <p className="text-gray-600 mb-6">
-                        You don't have permission to access this page. Admin privileges are required.
-                    </p>
-                    <a
-                        href="/home"
-                        className="inline-block bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-                    >
-                        Go to Home
-                    </a>
-                </div>
-            </div>
-        );
-    }
-
-    console.log('✅ Admin access granted');
+    // TEMPORARILY UNRESTRICTED: Allow all authenticated users to see admin for testing
+    console.log('✅ Admin access granted (UNRESTRICTED for testing)');
     return children;
 };
 

@@ -6,6 +6,8 @@ const DrawParticipants = () => {
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState('points'); // points or date
 
+    const [drawInfo, setDrawInfo] = useState(null);
+
     useEffect(() => {
         loadParticipants();
     }, []);
@@ -14,21 +16,30 @@ const DrawParticipants = () => {
         try {
             setLoading(true);
             const response = await viralService.getLatestParticipants();
-            setParticipants(response.data || []);
+
+            // Extract from { data: { draw: {}, participants: [], count: 0 } }
+            const data = response?.data || {};
+            const participantsList = data.participants || (Array.isArray(response) ? response : []);
+
+            setParticipants(participantsList);
+            if (data.draw) setDrawInfo(data.draw);
         } catch (error) {
             console.error('Failed to load participants:', error);
+            setParticipants([]);
         } finally {
             setLoading(false);
         }
     };
 
-    const sortedParticipants = [...participants].sort((a, b) => {
-        if (sortBy === 'points') {
-            return b.points - a.points;
-        } else {
-            return new Date(b.submissionDate) - new Date(a.submissionDate);
-        }
-    });
+    const sortedParticipants = Array.isArray(participants)
+        ? [...participants].sort((a, b) => {
+            if (sortBy === 'points') {
+                return (b.submissionsCount || 0) - (a.submissionsCount || 0);
+            } else {
+                return new Date(b.lastSubmittedAt || 0) - new Date(a.lastSubmittedAt || 0);
+            }
+        })
+        : [];
 
     const exportToCSV = () => {
         const headers = ['Username', 'Points', 'Submission Date'];
@@ -58,7 +69,14 @@ const DrawParticipants = () => {
                 <div className="mb-8 flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">Draw Participants</h1>
-                        <p className="text-gray-600">Latest draw participants and rankings</p>
+                        {drawInfo && (
+                            <p className="text-blue-600 font-medium">
+                                Active Draw: <span className="text-gray-900 font-bold">{drawInfo.title}</span>
+                                <span className="ml-2 text-gray-500 text-sm">
+                                    ({new Date(drawInfo.startDate).toLocaleDateString()} - {new Date(drawInfo.endDate).toLocaleDateString()})
+                                </span>
+                            </p>
+                        )}
                     </div>
                     <button
                         onClick={exportToCSV}
@@ -75,20 +93,20 @@ const DrawParticipants = () => {
                         <button
                             onClick={() => setSortBy('points')}
                             className={`px-4 py-2 rounded-lg font-medium transition-colors ${sortBy === 'points'
-                                    ? 'bg-blue-800 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-blue-800 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
-                            Sort by Points
+                            Sort by Submissions
                         </button>
                         <button
                             onClick={() => setSortBy('date')}
                             className={`px-4 py-2 rounded-lg font-medium transition-colors ${sortBy === 'date'
-                                    ? 'bg-blue-800 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-blue-800 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
-                            Sort by Date
+                            Sort by Last Active
                         </button>
                     </div>
                 </div>
@@ -117,36 +135,51 @@ const DrawParticipants = () => {
                                         Rank
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Username
+                                        Participant
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Points
+                                        Submissions
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Submission Date
+                                        Last Activity
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Location
                                     </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {sortedParticipants.map((participant, index) => (
-                                    <tr key={index} className="hover:bg-gray-50">
+                                    <tr key={participant._id || index} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">
+                                            <div className="text-sm font-medium text-gray-400">
                                                 #{index + 1}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">
-                                                {participant.username}
+                                            <div className="flex items-center gap-3">
+                                                {participant.profilePicture ? (
+                                                    <img src={participant.profilePicture} className="w-8 h-8 rounded-full border border-gray-200" alt="" />
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs">
+                                                        {participant.name?.charAt(0)}
+                                                    </div>
+                                                )}
+                                                <div className="text-sm font-bold text-gray-900">
+                                                    {participant.name}
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900 font-semibold">
-                                                {participant.points} pts
+                                            <div className="text-sm text-gray-900 font-semibold bg-gray-100 px-2 py-1 rounded w-fit">
+                                                {participant.submissionsCount} entries
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {new Date(participant.submissionDate).toLocaleDateString()}
+                                            {participant.lastSubmittedAt ? new Date(participant.lastSubmittedAt).toLocaleDateString() : 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {participant.country || participant.city ? `${participant.city || ''} ${participant.country || ''}`.trim() : 'Unknown'}
                                         </td>
                                     </tr>
                                 ))}

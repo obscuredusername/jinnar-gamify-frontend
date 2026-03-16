@@ -124,6 +124,65 @@ const adminService = {
         const response = await apiClient.post(`/viral/admin/draws/${drawId}/close`);
         return response.data;
     },
+
+    // ==================== AUTH & SYSTEM ====================
+
+    /**
+     * Admin login
+     * @param {string} email
+     * @param {string} password
+     */
+    login: async (email, password) => {
+        const response = await apiClient.post('/admin/login', { email, password });
+        if (response.data.token) {
+            localStorage.setItem('authToken', response.data.token);
+        }
+        return response.data;
+    },
+
+    /**
+     * Get admin dashboard stats
+     */
+    getStats: async () => {
+        const response = await apiClient.get('/admin/stats');
+        return response.data;
+    },
+
+    /**
+     * Verify/Approve a user
+     * @param {string} userId
+     * @param {string} status - approved/rejected
+     */
+    verifyUser: async (userId, status) => {
+        const response = await apiClient.patch('/admin/verify-user', { userId, status });
+        return response.data;
+    },
+
+    /**
+     * Suspend/Unsuspend a user
+     * @param {string} userId
+     * @param {boolean} suspend
+     */
+    suspendUser: async (userId, suspend) => {
+        const response = await apiClient.patch('/admin/suspend-user', { userId, suspend });
+        return response.data;
+    },
+
+    /**
+     * Get all users for administration
+     */
+    getUsers: async () => {
+        const response = await apiClient.get('/admin/users');
+        return response.data;
+    },
+
+    /**
+     * Get financial logs
+     */
+    getFinancialLogs: async (page = 1, limit = 10) => {
+        const response = await apiClient.get(`/admin/financial-logs?page=${page}&limit=${limit}`);
+        return response.data;
+    },
 };
 
 export default adminService;

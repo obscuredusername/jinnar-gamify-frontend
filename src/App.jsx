@@ -17,6 +17,7 @@ import SubmitPostLink from './pages/SubmitPostLink';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Settings from './pages/Settings';
+import VerifyAccount from './pages/VerifyAccount';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import AdminDraws from './pages/admin/AdminDraws';
@@ -26,16 +27,22 @@ import ManageRewards from './pages/admin/ManageRewards';
 import AdminSubmissions from './pages/admin/AdminSubmissions';
 import AdminPosts from './pages/admin/AdminPosts';
 import DrawParticipants from './pages/admin/DrawParticipants';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminFinances from './pages/admin/AdminFinances';
 import Header from './components/ui/Header';
 import Footer from './components/ui/Footer';
 import { ToastProvider } from './contexts/ToastContext';
 import ApiTest from './pages/ApiTest';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const { isAuthenticated } = useSelector((state) => state.user);
 
   return (
     <ToastProvider>
+      <Toaster position="top-right" reverseOrder={false} />
       <Router>
         <Header />
         <Routes>
@@ -56,6 +63,7 @@ function App() {
           <Route path="/past-winners" element={<PastWinners />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify" element={<VerifyAccount />} />
 
 
           {/* Protected Routes */}
@@ -93,6 +101,31 @@ function App() {
           />
 
           {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminUsers />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/finances"
+            element={
+              <AdminRoute>
+                <AdminFinances />
+              </AdminRoute>
+            }
+          />
           <Route
             path="/admin/draws"
             element={

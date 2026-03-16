@@ -27,7 +27,8 @@ const AdminPosts = () => {
             // Note: We'll need to add this endpoint to get all posts
             // For now, using submissions as placeholder
             const response = await viralService.getMySubmissions();
-            setPosts(response.data || []);
+            const data = response?.data || (Array.isArray(response) ? response : []);
+            setPosts(data);
         } catch (error) {
             console.error('Failed to load posts:', error);
         } finally {

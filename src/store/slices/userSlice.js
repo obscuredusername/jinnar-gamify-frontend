@@ -112,6 +112,27 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+export const loginAdmin = createAsyncThunk(
+  'user/loginAdmin',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post('/admin/login', credentials);
+      const { token, user } = response.data;
+      if (!token) throw new Error('No token received');
+      localStorage.setItem('authToken', token);
+      if (user) return user;
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Admin login failed');
+    }
+  }
+);
+
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchMe',
   async (_, { rejectWithValue }) => {
@@ -211,6 +232,24 @@ const userSlice = createSlice({
         state.error = action.payload?.message || action.payload || 'Login failed';
         state.user = null;
         state.isAuthenticated = false;
+      })
+      // Admin Login
+      .addCase(loginAdmin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload && typeof action.payload === 'object') {
+          state.user = action.payload;
+          state.isAuthenticated = true;
+        } else {
+          state.error = 'Invalid admin data';
+        }
+      })
+      .addCase(loginAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || action.payload || 'Admin login failed';
       })
       // Register
       .addCase(registerUser.pending, (state) => {

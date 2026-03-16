@@ -16,33 +16,22 @@ const ProtectedRoute = ({ children }) => {
     const { isAuthenticated, user } = useSelector((state) => state.user);
     const token = localStorage.getItem('authToken');
 
-    // STRICT VALIDATION: All conditions must be true
-    const hasValidToken = token && token.length > 0;
-
-    // Relaxed user validation: Check if we have a user object
-    // The token decoding might not provide all fields like email, so we check for basic existence
-    const hasValidUser = user && typeof user === 'object';
-
-    const isAuthenticatedInRedux = isAuthenticated === true;
+    // Basic authentication check
+    const isUserAuthenticated = isAuthenticated && token && user;
 
     console.log('🛡️ ProtectedRoute Check:', {
-        isAuthenticatedInRedux,
-        hasValidToken,
-        hasValidUser,
-        tokenLength: token?.length || 0,
-        userKeys: user ? Object.keys(user) : [],
+        isAuthenticated,
+        hasToken: !!token,
+        hasUser: !!user,
+        isUserAuthenticated
     });
 
-    // If ANY validation fails, redirect to sign in
-    if (!isAuthenticatedInRedux || !hasValidToken || !hasValidUser) {
-        console.warn('⚠️ Access denied - Redirecting to sign in:', {
-            reason: !isAuthenticatedInRedux ? 'Not authenticated in Redux' :
-                !hasValidToken ? 'No valid token' :
-                    !hasValidUser ? 'No valid user data' : 'Unknown',
-        });
+    // If not authenticated, redirect to login
+    if (!isUserAuthenticated) {
+        console.warn('⚠️ Access denied - Redirecting to login page');
 
-        // Clear invalid state
-        if (!hasValidToken) {
+        // If we have a token but no user/isAuthenticated, it might be stale
+        if (token && !isAuthenticated) {
             localStorage.removeItem('authToken');
         }
 

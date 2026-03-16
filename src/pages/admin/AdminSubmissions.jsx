@@ -20,7 +20,8 @@ const AdminSubmissions = () => {
         try {
             setLoading(true);
             const response = await adminService.getAllSubmissions();
-            setSubmissions(response.data || []);
+            const data = response?.data || (Array.isArray(response) ? response : []);
+            setSubmissions(data);
         } catch (error) {
             console.error('Failed to load submissions:', error);
         } finally {
@@ -143,21 +144,27 @@ const AdminSubmissions = () => {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {filteredSubmissions.map((submission) => (
                                     <tr key={submission._id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4">
                                             <div className="text-sm font-medium text-gray-900">
                                                 {submission.title}
                                             </div>
+                                            <div className="text-xs text-blue-600">
+                                                Draw: {typeof submission.drawId === 'object' ? submission.drawId?.title : submission.drawId}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-500">
-                                                {submission.userId}
+                                            <div className="text-sm text-gray-900">
+                                                {typeof submission.userId === 'object' ? submission.userId?.name : 'Unknown User'}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                {typeof submission.userId === 'object' ? submission.userId?.email : submission.userId}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {getStatusBadge(submission.status)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {new Date(submission.createdAt).toLocaleDateString()}
+                                            {submission.createdAt ? new Date(submission.createdAt).toLocaleDateString() : 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             {submission.status === 'pending' && (

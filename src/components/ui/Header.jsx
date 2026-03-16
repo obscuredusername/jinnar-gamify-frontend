@@ -130,40 +130,50 @@ const Header = () => {
                                         >
                                             Settings
                                         </Link>
-                                        {(user?.role === 'admin' || user?.isAdmin) && (
-                                            <>
-                                                <div className="border-t border-gray-200 my-1"></div>
-                                                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Admin</div>
-                                                <Link
-                                                    to="/admin/draws"
-                                                    onClick={() => setShowDropdown(false)}
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                                >
-                                                    🎯 Manage Draws
-                                                </Link>
-                                                <Link
-                                                    to="/admin/submissions"
-                                                    onClick={() => setShowDropdown(false)}
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                                >
-                                                    📋 Review Submissions
-                                                </Link>
-                                                <Link
-                                                    to="/admin/posts"
-                                                    onClick={() => setShowDropdown(false)}
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                                >
-                                                    📊 Manage Posts
-                                                </Link>
-                                                <Link
-                                                    to="/admin/participants"
-                                                    onClick={() => setShowDropdown(false)}
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                                >
-                                                    👥 View Participants
-                                                </Link>
-                                            </>
-                                        )}
+                                        {(user?.role?.toLowerCase() === 'superadmin' ||
+                                            user?.role?.toLowerCase() === 'super admin' ||
+                                            user?.role === 'admin' ||
+                                            user?.isAdmin) && (
+                                                <>
+                                                    <div className="border-t border-gray-200 my-1"></div>
+                                                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Admin</div>
+                                                    <Link
+                                                        to="/admin"
+                                                        onClick={() => setShowDropdown(false)}
+                                                        className="block px-4 py-2 text-sm text-blue-800 font-bold hover:bg-blue-50"
+                                                    >
+                                                        🔐 Admin Dashboard
+                                                    </Link>
+                                                    <Link
+                                                        to="/admin/draws"
+                                                        onClick={() => setShowDropdown(false)}
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                                                    >
+                                                        🎯 Manage Draws
+                                                    </Link>
+                                                    <Link
+                                                        to="/admin/submissions"
+                                                        onClick={() => setShowDropdown(false)}
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                                                    >
+                                                        📋 Review Submissions
+                                                    </Link>
+                                                    <Link
+                                                        to="/admin/posts"
+                                                        onClick={() => setShowDropdown(false)}
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                                                    >
+                                                        📊 Manage Posts
+                                                    </Link>
+                                                    <Link
+                                                        to="/admin/participants"
+                                                        onClick={() => setShowDropdown(false)}
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                                                    >
+                                                        👥 View Participants
+                                                    </Link>
+                                                </>
+                                            )}
                                         <button
                                             onClick={handleLogout}
                                             className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
@@ -216,9 +226,12 @@ const Header = () => {
                                 <Link to="/dashboard" onClick={closeMobileMenu} className="text-gray-700 py-2">My Dashboard</Link>
                                 <Link to="/dashboard" onClick={closeMobileMenu} className="text-gray-700 py-2">My Videos</Link>
                                 <Link to="/settings" onClick={closeMobileMenu} className="text-gray-700 py-2">Settings</Link>
-                                {(user?.role === 'admin' || user?.isAdmin) && (
-                                    <Link to="/admin/draws" onClick={closeMobileMenu} className="text-blue-800 font-semibold py-2">🔐 Admin Panel</Link>
-                                )}
+                                {(user?.role?.toLowerCase() === 'superadmin' ||
+                                    user?.role?.toLowerCase() === 'super admin' ||
+                                    user?.role === 'admin' ||
+                                    user?.isAdmin) && (
+                                        <Link to="/admin" onClick={closeMobileMenu} className="text-blue-800 font-semibold py-2">🔐 Admin Dashboard</Link>
+                                    )}
                                 <button onClick={handleLogout} className="text-red-600 text-left py-2">Logout</button>
                             </div>
                             <div className="flex flex-col gap-3 mt-2">

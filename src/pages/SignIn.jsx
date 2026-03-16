@@ -74,7 +74,7 @@ const SignIn = () => {
             console.error('❌ Login failed with error:', err);
 
             // Make sure token is cleared on error
-            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
 
             // Check for 403 Verification Needed
             const status = err?.status;
