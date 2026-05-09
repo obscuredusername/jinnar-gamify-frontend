@@ -2,22 +2,13 @@ import apiClient from '../config/apiClient';
 
 /**
  * Admin Service
- * Handles all API calls related to admin operations for draw management
+ * Handles all API calls related to admin operations
  */
 const adminService = {
     // ==================== DRAW MANAGEMENT ====================
 
     /**
      * Create a new lucky draw
-     * @param {Object} drawData - The draw data
-     * @param {string} drawData.title - Draw title
-     * @param {string} drawData.theme - Draw theme
-     * @param {string[]} drawData.hashtags - Array of hashtags
-     * @param {string} drawData.startDate - ISO date string
-     * @param {string} drawData.endDate - ISO date string
-     * @param {number} drawData.prizePool - Total prize pool amount
-     * @param {string} drawData.status - Draw status (active, upcoming, completed)
-     * @returns {Promise} Response with created draw details
      */
     createDraw: async (drawData) => {
         const response = await apiClient.post('/viral/admin/draws', drawData);
@@ -26,9 +17,6 @@ const adminService = {
 
     /**
      * Update an existing draw
-     * @param {string} drawId - The ID of the draw to update
-     * @param {Object} drawData - The updated draw data
-     * @returns {Promise} Response with updated draw details
      */
     updateDraw: async (drawId, drawData) => {
         const response = await apiClient.put(`/viral/admin/draws/${drawId}`, drawData);
@@ -36,8 +24,7 @@ const adminService = {
     },
 
     /**
-     * Get all draws (admin view with all statuses)
-     * @returns {Promise} Array of all draws
+     * Get all draws (admin view)
      */
     getAllDraws: async () => {
         const response = await apiClient.get('/viral/admin/draws');
@@ -45,13 +32,44 @@ const adminService = {
     },
 
     /**
-     * Assign rewards to a specific draw
-     * @param {string} drawId - The ID of the draw
-     * @param {Array} rewards - Array of reward objects
-     * @param {number} rewards[].rank - Winner rank
-     * @param {string} rewards[].rewardType - Type of reward (cash, merchandise)
-     * @param {number} rewards[].amount - Reward amount (0 for merchandise)
-     * @returns {Promise} Response with success message
+     * Delete a draw
+     */
+    deleteDraw: async (drawId) => {
+        const response = await apiClient.delete(`/viral/admin/draws/${drawId}`);
+        return response.data;
+    },
+
+    /**
+     * Upload a banner image for a draw
+     * @param {string} drawId
+     * @param {File} imageFile
+     */
+    uploadDrawBanner: async (drawId, imageFile) => {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        const response = await apiClient.post(`/viral/admin/draws/${drawId}/banner`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return response.data;
+    },
+
+    /**
+     * Close a draw and assign winners automatically
+     * @param {string} drawId
+     */
+    closeDraw: async (drawId) => {
+        const response = await apiClient.post(`/viral/admin/draws/${drawId}/close`);
+        return response.data;
+    },
+
+    // ==================== REWARDS ====================
+
+    /**
+     * Assign rewards to a draw.
+     * Accepts a flat array of { rank, rewardType, amount }.
+     * For grouped winners, the caller should expand them before calling this.
+     * @param {string} drawId
+     * @param {Array<{rank: number, rewardType: string, amount: number}>} rewards
      */
     assignRewards: async (drawId, rewards) => {
         const response = await apiClient.post(`/viral/admin/draws/${drawId}/rewards`, rewards);
@@ -59,20 +77,38 @@ const adminService = {
     },
 
     /**
-     * Delete a draw (if needed in future)
-     * @param {string} drawId - The ID of the draw to delete
-     * @returns {Promise} Response with success message
+     * Get all winners for a draw (admin view — includes approvalStatus)
+     * @param {string} drawId
      */
-    deleteDraw: async (drawId) => {
-        const response = await apiClient.delete(`/viral/admin/draws/${drawId}`);
+    getDrawWinners: async (drawId) => {
+        const response = await apiClient.get(`/viral/admin/draws/${drawId}/winners`);
+        return response.data;
+    },
+
+    /**
+     * Approve a winner — credits their wallet
+     * @param {string} rewardId
+     * @param {string} [note]
+     */
+    approveReward: async (rewardId, note = '') => {
+        const response = await apiClient.post(`/viral/admin/rewards/${rewardId}/approve`, { note });
+        return response.data;
+    },
+
+    /**
+     * Reject a winner — assigns a replacement automatically
+     * @param {string} rewardId
+     * @param {string} reason
+     */
+    rejectReward: async (rewardId, reason) => {
+        const response = await apiClient.post(`/viral/admin/rewards/${rewardId}/reject`, { reason });
         return response.data;
     },
 
     // ==================== SUBMISSION MANAGEMENT ====================
 
     /**
-     * Get all submissions for admin review
-     * @returns {Promise} Array of all submissions with status
+     * Get all submissions (admin view)
      */
     getAllSubmissions: async () => {
         const response = await apiClient.get('/viral/admin/submissions');
@@ -80,58 +116,78 @@ const adminService = {
     },
 
     /**
-     * Review a submission (approve/reject)
-     * @param {string} submissionId - The ID of the submission
-     * @param {string} status - New status (approved/rejected)
-     * @param {string} reviewNotes - Optional review notes
-     * @returns {Promise} Response with updated submission
+     * Review a submission — update status, reviewNotes, or engagement metrics
+     * @param {string} submissionId
+     * @param {Object} data - Can include: { status, reviewNotes, engagement }
      */
-    reviewSubmission: async (submissionId, status, reviewNotes = '') => {
-        const response = await apiClient.put(`/viral/admin/submissions/${submissionId}`, {
-            status,
-            reviewNotes,
-        });
+    reviewSubmission: async (submissionId, data) => {
+        const response = await apiClient.put(`/viral/admin/submissions/${submissionId}`, data);
         return response.data;
     },
 
-    // ==================== POST MANAGEMENT ====================
+    /**
+     * Shorthand: approve a submission
+     */
+    approveSubmission: async (submissionId, reviewNotes = '') => {
+        return adminService.reviewSubmission(submissionId, { status: 'approved', reviewNotes });
+    },
 
     /**
-     * Update a social media post (engagement, verification, fraud flag)
-     * @param {string} postId - The ID of the post
-     * @param {Object} data - Update data
-     * @param {boolean} data.verified - Verification status
-     * @param {boolean} data.fraudFlag - Fraud flag status
-     * @param {Object} data.engagement - Engagement metrics
-     * @param {number} data.engagement.likes - Number of likes
-     * @param {number} data.engagement.views - Number of views
-     * @param {number} data.engagement.shares - Number of shares
-     * @returns {Promise} Response with updated post and points
+     * Shorthand: reject a submission
      */
-    updatePost: async (postId, data) => {
-        const response = await apiClient.put(`/viral/admin/posts/${postId}`, data);
+    rejectSubmission: async (submissionId, reviewNotes = '') => {
+        return adminService.reviewSubmission(submissionId, { status: 'rejected', reviewNotes });
+    },
+
+    /**
+     * Update engagement metrics for a submission
+     * @param {string} submissionId
+     * @param {{ likes, comments, shares, saves, views }} engagement
+     */
+    updateEngagement: async (submissionId, engagement) => {
+        return adminService.reviewSubmission(submissionId, { engagement });
+    },
+
+    // ==================== ANNOUNCEMENTS ====================
+
+    /**
+     * Get all announcements (admin)
+     */
+    getAnnouncements: async () => {
+        const response = await apiClient.get('/viral/admin/announcements');
         return response.data;
     },
 
-    // ==================== DRAW LIFECYCLE ====================
+    /**
+     * Create a new announcement
+     * @param {{ title, content, category, date }} data
+     */
+    createAnnouncement: async (data) => {
+        const response = await apiClient.post('/viral/admin/announcements', data);
+        return response.data;
+    },
 
     /**
-     * Close a draw (stop accepting new submissions)
-     * @param {string} drawId - The ID of the draw to close
-     * @returns {Promise} Response with success message
+     * Update an existing announcement
+     * @param {string} announcementId
+     * @param {{ title, content, category, date }} data
      */
-    closeDraw: async (drawId) => {
-        const response = await apiClient.post(`/viral/admin/draws/${drawId}/close`);
+    updateAnnouncement: async (announcementId, data) => {
+        const response = await apiClient.put(`/viral/admin/announcements/${announcementId}`, data);
+        return response.data;
+    },
+
+    /**
+     * Delete an announcement
+     * @param {string} announcementId
+     */
+    deleteAnnouncement: async (announcementId) => {
+        const response = await apiClient.delete(`/viral/admin/announcements/${announcementId}`);
         return response.data;
     },
 
     // ==================== AUTH & SYSTEM ====================
 
-    /**
-     * Admin login
-     * @param {string} email
-     * @param {string} password
-     */
     login: async (email, password) => {
         const response = await apiClient.post('/admin/login', { email, password });
         if (response.data.token) {
@@ -140,45 +196,26 @@ const adminService = {
         return response.data;
     },
 
-    /**
-     * Get admin dashboard stats
-     */
     getStats: async () => {
         const response = await apiClient.get('/admin/stats');
         return response.data;
     },
 
-    /**
-     * Verify/Approve a user
-     * @param {string} userId
-     * @param {string} status - approved/rejected
-     */
     verifyUser: async (userId, status) => {
         const response = await apiClient.patch('/admin/verify-user', { userId, status });
         return response.data;
     },
 
-    /**
-     * Suspend/Unsuspend a user
-     * @param {string} userId
-     * @param {boolean} suspend
-     */
     suspendUser: async (userId, suspend) => {
         const response = await apiClient.patch('/admin/suspend-user', { userId, suspend });
         return response.data;
     },
 
-    /**
-     * Get all users for administration
-     */
     getUsers: async () => {
         const response = await apiClient.get('/admin/users');
         return response.data;
     },
 
-    /**
-     * Get financial logs
-     */
     getFinancialLogs: async (page = 1, limit = 10) => {
         const response = await apiClient.get(`/admin/financial-logs?page=${page}&limit=${limit}`);
         return response.data;

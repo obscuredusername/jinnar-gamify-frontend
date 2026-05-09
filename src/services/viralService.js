@@ -5,46 +5,51 @@ import apiClient from '../config/apiClient';
  * Handles all API calls related to viral campaigns, submissions, draws, leaderboards, and rewards
  */
 const viralService = {
+    // ==================== FX / CURRENCY ====================
+
+    /**
+     * Get all supported FX rates (base: USD)
+     * @returns {Promise} { baseCurrency: 'USD', rates: { TZS: 2580, KES: 130, ... } }
+     */
+    getFxRates: async () => {
+        const response = await apiClient.get('/fx/rates');
+        return response.data;
+    },
+
     // ==================== SUBMISSIONS ====================
 
     /**
-     * Upload a video submission for a draw
-     * @param {File} videoFile - The video file to upload
-     * @param {string} drawId - The ID of the draw
-     * @param {string} title - Title of the video
-     * @param {File} thumbnailFile - Optional thumbnail file
-     * @returns {Promise} Response with submission details
+     * Create a new submission (with optional video file OR live link)
+     * @param {Object} payload
+     * @param {string} payload.drawId
+     * @param {string} payload.title
+     * @param {string} [payload.liveLinkUrl] - Social media live link URL
+     * @param {string} [payload.platform] - e.g. 'tiktok', 'instagram'
+     * @param {File}   [payload.videoFile]  - Optional video file upload
+     * @returns {Promise} Created submission object
      */
-    uploadVideo: async (videoFile, drawId, title) => {
+    createSubmission: async ({ drawId, title, liveLinkUrl, platform, videoFile }) => {
         const formData = new FormData();
-        formData.append('video', videoFile);
         formData.append('drawId', drawId);
         formData.append('title', title);
+        if (liveLinkUrl) formData.append('liveLinkUrl', liveLinkUrl);
+        if (platform) formData.append('platform', platform);
+        if (videoFile) formData.append('video', videoFile);
 
         const response = await apiClient.post('/viral/submissions', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
         return response.data;
     },
 
     /**
-     * Upload thumbnail for an existing submission
-     * @param {string} submissionId - The ID of the submission
-     * @param {File} thumbnailFile - The thumbnail file
-     * @returns {Promise} Response with updated submission
+     * Legacy alias — upload a video submission for a draw
+     * @param {File} videoFile
+     * @param {string} drawId
+     * @param {string} title
      */
-    uploadThumbnail: async (submissionId, thumbnailFile) => {
-        const formData = new FormData();
-        formData.append('thumbnail', thumbnailFile);
-
-        const response = await apiClient.post(`/viral/submissions/${submissionId}/thumbnail`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        return response.data;
+    uploadVideo: async (videoFile, drawId, title) => {
+        return viralService.createSubmission({ drawId, title, videoFile });
     },
 
     /**
@@ -57,14 +62,25 @@ const viralService = {
     },
 
     /**
-     * Submit a social media post link for a video
-     * @param {Object} data - The submission data
-     * @param {string} data.submissionId - The ID of the video submission
-     * @param {string} data.drawId - The ID of the draw
-     * @param {string} data.platform - The platform (tiktok, instagram, etc.)
-     * @param {string} data.postUrl - The URL of the post
-     * @param {File} data.screenshot - The screenshot file
-     * @returns {Promise} Response
+     * Get a single submission by ID (current user)
+     * @param {string} submissionId
+     */
+    getMySubmissionById: async (submissionId) => {
+        const response = await apiClient.get(`/viral/submissions/me/${submissionId}`);
+        return response.data;
+    },
+
+    /**
+     * Submit a social media post link for an already-uploaded video submission.
+     * Called from SubmitPostLink page AFTER the user has posted their video on social media.
+     *
+     * @param {Object} params
+     * @param {string} params.submissionId  - ID of the existing video submission
+     * @param {string} params.drawId        - ID of the draw
+     * @param {string} params.platform      - 'tiktok' | 'instagram' | 'facebook' | 'youtube'
+     * @param {string} params.postUrl       - The live URL of the social media post
+     * @param {File}   [params.screenshot]  - Optional proof screenshot
+     * @returns {Promise} Created post object
      */
     submitPost: async ({ submissionId, drawId, platform, postUrl, screenshot }) => {
         const formData = new FormData();
@@ -72,14 +88,24 @@ const viralService = {
         formData.append('drawId', drawId);
         formData.append('platform', platform);
         formData.append('postUrl', postUrl);
-        if (screenshot) {
-            formData.append('screenshot', screenshot);
-        }
+        if (screenshot) formData.append('screenshot', screenshot);
 
         const response = await apiClient.post('/viral/posts', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return response.data;
+    },
+
+    /**
+     * Upload a thumbnail for an existing submission
+     * @param {string} submissionId
+     * @param {File} thumbnailFile
+     */
+    uploadThumbnail: async (submissionId, thumbnailFile) => {
+        const formData = new FormData();
+        formData.append('thumbnail', thumbnailFile);
+        const response = await apiClient.post(`/viral/submissions/${submissionId}/thumbnail`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
         return response.data;
     },
@@ -87,21 +113,17 @@ const viralService = {
     // ==================== DRAWS ====================
 
     /**
-     * Get list of draws
-     * @param {string} status - Filter by status: 'active', 'upcoming', 'completed'
-     * @returns {Promise} Array of draws
+     * Get list of draws filtered by status
+     * @param {string} status - 'active' | 'upcoming' | 'completed' | 'closed'
      */
     getDraws: async (status = 'active') => {
-        const response = await apiClient.get('/viral/draws', {
-            params: { status },
-        });
+        const response = await apiClient.get('/viral/draws', { params: { status } });
         return response.data;
     },
 
     /**
-     * Get a single draw by ID
-     * @param {string} drawId - The ID of the draw
-     * @returns {Promise} Draw details including title, prizePool, status, remainingTime
+     * Get a single draw by ID (returns submissions array for that draw)
+     * @param {string} drawId
      */
     getSingleDraw: async (drawId) => {
         const response = await apiClient.get(`/viral/draws/${drawId}`);
@@ -109,9 +131,8 @@ const viralService = {
     },
 
     /**
-     * Get winners for a specific draw
-     * @param {string} drawId - The ID of the draw
-     * @returns {Promise} Array of winners with ranks and rewards
+     * Get public winners for a specific draw
+     * @param {string} drawId
      */
     getDrawWinners: async (drawId) => {
         const response = await apiClient.get(`/viral/draws/${drawId}/winners`);
@@ -121,31 +142,24 @@ const viralService = {
     // ==================== LEADERBOARD ====================
 
     /**
-     * Get global/regional/country leaderboard
-     * @param {string} drawId - The ID of the draw (optional for all-time)
-     * @param {string} scope - 'global', 'country', or 'city'
-     * @param {number} limit - Number of results to return
-     * @returns {Promise} Array of leaderboard entries
+     * Get global leaderboard (optionally for a specific draw)
+     * @param {string|null} drawId
+     * @param {string} scope - 'global' | 'country' | 'city'
+     * @param {number} limit
      */
     getLeaderboard: async (drawId = null, scope = 'global', limit = 50) => {
         const params = { scope, limit };
-        if (drawId) {
-            params.drawId = drawId;
-        }
-
+        if (drawId) params.drawId = drawId;
         const response = await apiClient.get('/viral/leaderboard', { params });
         return response.data;
     },
 
     /**
-     * Get current user's rank in a draw
-     * @param {string} drawId - The ID of the draw
-     * @returns {Promise} User's rank data (global, country, city)
+     * Get current user's rank in a specific draw
+     * @param {string} drawId
      */
     getMyRank: async (drawId) => {
-        const response = await apiClient.get('/viral/leaderboard/me', {
-            params: { drawId },
-        });
+        const response = await apiClient.get('/viral/leaderboard/me', { params: { drawId } });
         return response.data;
     },
 
@@ -153,18 +167,17 @@ const viralService = {
 
     /**
      * Get current user's points and breakdown
-     * @returns {Promise} Points data with platform breakdown
      */
     getMyPoints: async () => {
         const response = await apiClient.get('/viral/points/me');
         return response.data;
     },
 
-    // ==================== REWARDS ====================
+    // ==================== REWARDS (USER) ====================
 
     /**
-     * Get current user's rewards/winnings
-     * @returns {Promise} Array of rewards
+     * Get current user's active rewards and rejection history
+     * @returns {Promise} { activeRewards: [], rejections: [] }
      */
     getMyRewards: async () => {
         const response = await apiClient.get('/viral/rewards/me');
@@ -174,95 +187,34 @@ const viralService = {
     // ==================== ANNOUNCEMENTS ====================
 
     /**
-     * Get platform announcements
-     * @returns {Promise} Array of announcements
+     * Get platform announcements (public)
      */
     getAnnouncements: async () => {
         const response = await apiClient.get('/viral/announcements');
         return response.data;
     },
 
-    // ==================== HELPER METHODS ====================
+    // ==================== HELPER SHORTCUTS ====================
 
-    /**
-     * Get active draws only
-     * @returns {Promise} Array of active draws
-     */
-    getActiveDraws: async () => {
-        return viralService.getDraws('active');
-    },
+    getActiveDraws: async () => viralService.getDraws('active'),
+    getUpcomingDraws: async () => viralService.getDraws('upcoming'),
+    getCompletedDraws: async () => viralService.getDraws('completed'),
+    getClosedDraws: async () => viralService.getDraws('closed'),
 
-    /**
-     * Get upcoming draws
-     * @returns {Promise} Array of upcoming draws
-     */
-    getUpcomingDraws: async () => {
-        return viralService.getDraws('upcoming');
-    },
-
-    /**
-     * Get completed draws
-     * @returns {Promise} Array of completed draws
-     */
-    getCompletedDraws: async () => {
-        return viralService.getDraws('completed');
-    },
-
-    /**
-     * Get closed draws (alias for completed/closed)
-     * @returns {Promise} Array of closed draws
-     */
-    getClosedDraws: async () => {
-        return viralService.getDraws('closed');
-    },
-
-    /**
-     * Get global leaderboard for a specific draw
-     * @param {string} drawId - The ID of the draw
-     * @param {number} limit - Number of results
-     * @returns {Promise} Global leaderboard data
-     */
-    getGlobalLeaderboard: async (drawId, limit = 50) => {
-        return viralService.getLeaderboard(drawId, 'global', limit);
-    },
-
-    /**
-     * Get country leaderboard for a specific draw
-     * @param {string} drawId - The ID of the draw
-     * @param {number} limit - Number of results
-     * @returns {Promise} Country leaderboard data
-     */
-    getCountryLeaderboard: async (drawId, limit = 50) => {
-        return viralService.getLeaderboard(drawId, 'country', limit);
-    },
-
-    /**
-     * Get city leaderboard for a specific draw
-     * @param {string} drawId - The ID of the draw
-     * @param {number} limit - Number of results
-     * @returns {Promise} City leaderboard data
-     */
-    getCityLeaderboard: async (drawId, limit = 50) => {
-        return viralService.getLeaderboard(drawId, 'city', limit);
-    },
+    getGlobalLeaderboard: async (drawId, limit = 50) =>
+        viralService.getLeaderboard(drawId, 'global', limit),
+    getCountryLeaderboard: async (drawId, limit = 50) =>
+        viralService.getLeaderboard(drawId, 'country', limit),
+    getCityLeaderboard: async (drawId, limit = 50) =>
+        viralService.getLeaderboard(drawId, 'city', limit),
 
     // ==================== DRAW LIFECYCLE ====================
 
-    /**
-     * Archive a draw
-     * @param {string} drawId - The ID of the draw to archive
-     * @returns {Promise} Response with success message
-     */
     archiveDraw: async (drawId) => {
         const response = await apiClient.post(`/viral/draws/${drawId}/archive`);
         return response.data;
     },
 
-    /**
-     * Unarchive a draw
-     * @param {string} drawId - The ID of the draw to unarchive
-     * @returns {Promise} Response with success message
-     */
     unarchiveDraw: async (drawId) => {
         const response = await apiClient.post(`/viral/draws/${drawId}/unarchive`);
         return response.data;
@@ -270,10 +222,6 @@ const viralService = {
 
     // ==================== PARTICIPANTS ====================
 
-    /**
-     * Get participants in the latest draw
-     * @returns {Promise} Array of participants with username, points, submission date
-     */
     getLatestParticipants: async () => {
         const response = await apiClient.get('/viral/draws/latest/participants');
         return response.data;

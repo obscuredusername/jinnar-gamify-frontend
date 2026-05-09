@@ -93,14 +93,6 @@ const AdminDashboard = () => {
             badge: stats.pendingSubmissions > 0 ? `${stats.pendingSubmissions} Videos` : null
         },
         {
-            title: 'Social Posts',
-            description: 'Verify links and update engagement metrics',
-            icon: <ArrowTrendingUpIcon className="w-8 h-8 text-pink-600" />,
-            link: '/admin/posts',
-            color: 'bg-pink-50',
-            borderColor: 'border-pink-200'
-        },
-        {
             title: 'Draw Winners',
             description: 'Manage rewards for completed challenges',
             icon: <TrophyIcon className="w-8 h-8 text-yellow-600" />,

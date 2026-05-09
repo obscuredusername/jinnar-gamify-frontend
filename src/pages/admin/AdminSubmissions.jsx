@@ -1,20 +1,27 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import { useToast } from '../../contexts/ToastContext';
+import VideoPreviewModal from '../../components/admin/VideoPreviewModal';
 
 const AdminSubmissions = () => {
     const toast = useToast();
+    const location = useLocation();
     const [submissions, setSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
+    const [userFilter, setUserFilter] = useState('all');
     const [selectedSubmission, setSelectedSubmission] = useState(null);
-    const [reviewNotes, setReviewNotes] = useState('');
     const [showModal, setShowModal] = useState(false);
-    const [actionType, setActionType] = useState(''); // approve or reject
 
     useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const userIdParam = params.get('userId');
+        if (userIdParam) {
+            setUserFilter(userIdParam);
+        }
         loadSubmissions();
-    }, []);
+    }, [location.search]);
 
     const loadSubmissions = async () => {
         try {
@@ -29,44 +36,29 @@ const AdminSubmissions = () => {
         }
     };
 
-    const handleReview = async (status) => {
-        if (!selectedSubmission) return;
+    const uniqueUsers = Array.from(new Set(submissions.map(s => s.userId?._id))).map(id => {
+        return submissions.find(s => s.userId?._id === id)?.userId;
+    }).filter(Boolean);
 
-        try {
-            await adminService.reviewSubmission(
-                selectedSubmission._id,
-                status,
-                reviewNotes
-            );
-
-            // Update local state
-            setSubmissions(prev =>
-                prev.map(sub =>
-                    sub._id === selectedSubmission._id
-                        ? { ...sub, status }
-                        : sub
-                )
-            );
-
-            // Close modal
-            setShowModal(false);
-            setSelectedSubmission(null);
-            setReviewNotes('');
-        } catch (error) {
-            console.error('Failed to review submission:', error);
-            toast.error('Failed to update submission status');
-        }
-    };
-
-    const openReviewModal = (submission, action) => {
+    const openPreviewModal = (submission) => {
         setSelectedSubmission(submission);
-        setActionType(action);
         setShowModal(true);
     };
 
+    const handleModalAction = (updatedSubmission) => {
+        setSubmissions(prev =>
+            prev.map(sub =>
+                sub._id === updatedSubmission._id ? updatedSubmission : sub
+            )
+        );
+    };
+
     const filteredSubmissions = submissions.filter(sub => {
-        if (filter === 'all') return true;
-        return sub.status === filter;
+        const statusMatch = filter === 'all' || sub.status === filter;
+        const userMatch = userFilter === 'all' || 
+                          sub.userId?._id === userFilter || 
+                          sub.userId === userFilter;
+        return statusMatch && userMatch;
     });
 
     const getStatusBadge = (status) => {
@@ -94,7 +86,7 @@ const AdminSubmissions = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+                <div className="bg-white rounded-lg shadow-sm p-4 mb-6 flex flex-col sm:flex-row justify-between gap-4">
                     <div className="flex gap-3">
                         {['all', 'pending', 'approved', 'rejected'].map(status => (
                             <button
@@ -108,6 +100,21 @@ const AdminSubmissions = () => {
                                 {status.charAt(0).toUpperCase() + status.slice(1)}
                             </button>
                         ))}
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <label className="text-sm font-medium text-gray-700">Filter by User:</label>
+                        <select
+                            value={userFilter}
+                            onChange={(e) => setUserFilter(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        >
+                            <option value="all">All Users</option>
+                            {uniqueUsers.map(u => (
+                                <option key={u._id} value={u._id}>
+                                    {u.name || u.email || u._id}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 
@@ -145,12 +152,12 @@ const AdminSubmissions = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {filteredSubmissions.map((submission) => (
-                                    <tr key={submission._id} className="hover:bg-gray-50">
+                                    <tr key={submission._id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openPreviewModal(submission)}>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm font-medium text-gray-900">
-                                                {submission.title}
+                                            <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                                                {submission.videoUrl ? '🎥' : '🔗'} {submission.title}
                                             </div>
-                                            <div className="text-xs text-blue-600">
+                                            <div className="text-xs text-blue-600 mt-1">
                                                 Draw: {typeof submission.drawId === 'object' ? submission.drawId?.title : submission.drawId}
                                             </div>
                                         </td>
@@ -169,22 +176,15 @@ const AdminSubmissions = () => {
                                             {submission.createdAt ? new Date(submission.createdAt).toLocaleDateString() : 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            {submission.status === 'pending' && (
-                                                <div className="flex gap-2 justify-end">
-                                                    <button
-                                                        onClick={() => openReviewModal(submission, 'approve')}
-                                                        className="text-green-600 hover:text-green-900"
-                                                    >
-                                                        Approve
-                                                    </button>
-                                                    <button
-                                                        onClick={() => openReviewModal(submission, 'reject')}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        Reject
-                                                    </button>
-                                                </div>
-                                            )}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openPreviewModal(submission);
+                                                }}
+                                                className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-md"
+                                            >
+                                                View Details
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -193,45 +193,17 @@ const AdminSubmissions = () => {
                     </div>
                 )}
 
-                {/* Review Modal */}
-                {showModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                            <h2 className="text-xl font-bold mb-4">
-                                {actionType === 'approve' ? 'Approve' : 'Reject'} Submission
-                            </h2>
-                            <p className="text-gray-600 mb-4">
-                                {selectedSubmission?.title}
-                            </p>
-                            <textarea
-                                value={reviewNotes}
-                                onChange={(e) => setReviewNotes(e.target.value)}
-                                placeholder="Add review notes (optional)"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
-                                rows={4}
-                            />
-                            <div className="flex gap-3 justify-end">
-                                <button
-                                    onClick={() => {
-                                        setShowModal(false);
-                                        setReviewNotes('');
-                                    }}
-                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => handleReview(actionType === 'approve' ? 'approved' : 'rejected')}
-                                    className={`px-4 py-2 text-white rounded-lg ${actionType === 'approve'
-                                        ? 'bg-green-600 hover:bg-green-700'
-                                        : 'bg-red-600 hover:bg-red-700'
-                                        }`}
-                                >
-                                    Confirm {actionType === 'approve' ? 'Approval' : 'Rejection'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                {/* Video Preview Modal */}
+                {showModal && selectedSubmission && (
+                    <VideoPreviewModal
+                        submission={selectedSubmission}
+                        baseUrl={import.meta.env.VITE_API_URL || 'http://localhost:5000'}
+                        onClose={() => {
+                            setShowModal(false);
+                            setSelectedSubmission(null);
+                        }}
+                        onAction={handleModalAction}
+                    />
                 )}
             </div>
         </div>

@@ -13,7 +13,7 @@ const ManageRewards = () => {
     const [drawInfo, setDrawInfo] = useState(null);
 
     const [rewards, setRewards] = useState([
-        { rank: 1, rewardType: 'cash', amount: '' },
+        { rank: 1, rewardType: 'cash', amount: '', numberOfWinners: 1 },
     ]);
 
     useEffect(() => {
@@ -41,8 +41,9 @@ const ManageRewards = () => {
     };
 
     const addReward = () => {
-        const nextRank = rewards.length + 1;
-        setRewards([...rewards, { rank: nextRank, rewardType: 'cash', amount: '' }]);
+        // Calculate the next starting rank based on all existing entries
+        const nextRank = rewards.reduce((sum, r) => sum + (parseInt(r.numberOfWinners) || 1), 0) + 1;
+        setRewards([...rewards, { rank: nextRank, rewardType: 'cash', amount: '', numberOfWinners: 1 }]);
     };
 
     const removeReward = (index) => {
@@ -57,6 +58,24 @@ const ManageRewards = () => {
         setRewards(updated);
     };
 
+    /**
+     * Expand grouped reward rows into a flat array of individual rank entries.
+     * e.g. { rank: 2, amount: 10, numberOfWinners: 5 }
+     *   => [{ rank:2, amount:10 }, { rank:3, amount:10 }, ... { rank:6, amount:10 }]
+     */
+    const flattenRewards = (rows) => {
+        const flat = [];
+        let currentRank = 1;
+        rows.forEach(r => {
+            const count = parseInt(r.numberOfWinners) || 1;
+            const amount = r.rewardType === 'cash' ? parseFloat(r.amount) || 0 : 0;
+            for (let i = 0; i < count; i++) {
+                flat.push({ rank: currentRank++, rewardType: r.rewardType, amount });
+            }
+        });
+        return flat;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
@@ -64,8 +83,7 @@ const ManageRewards = () => {
         setSuccess(false);
 
         try {
-            // Validate rewards
-            const validRewards = rewards.filter(r => r.rank && r.rewardType);
+            const validRewards = rewards.filter(r => r.rewardType);
 
             if (validRewards.length === 0) {
                 setError('Please add at least one reward');
@@ -73,12 +91,8 @@ const ManageRewards = () => {
                 return;
             }
 
-            // Prepare rewards data
-            const rewardsData = validRewards.map(r => ({
-                rank: parseInt(r.rank),
-                rewardType: r.rewardType,
-                amount: r.rewardType === 'cash' ? parseFloat(r.amount) || 0 : 0
-            }));
+            // Flatten grouped rewards → individual rank entries for the API
+            const rewardsData = flattenRewards(validRewards);
 
             const response = await adminService.assignRewards(id, rewardsData);
 
@@ -178,23 +192,14 @@ const ManageRewards = () => {
                         <div className="space-y-4">
                             {rewards.map((reward, index) => (
                                 <div key={index} className="border border-gray-200 rounded-lg p-4">
+                                    {/* Grouped Winner Badge */}
+                                    {parseInt(reward.numberOfWinners) > 1 && (
+                                        <div className="mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                            🏅 Group: {reward.numberOfWinners} winners × ${reward.amount || 0} each = ${(parseInt(reward.numberOfWinners) * (parseFloat(reward.amount) || 0)).toLocaleString()} total
+                                        </div>
+                                    )}
                                     <div className="flex items-start gap-4">
-                                        <div className="flex-1 grid md:grid-cols-3 gap-4">
-                                            {/* Rank */}
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                                                    Rank
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    value={reward.rank}
-                                                    onChange={(e) => updateReward(index, 'rank', e.target.value)}
-                                                    min="1"
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent"
-                                                    required
-                                                />
-                                            </div>
-
+                                        <div className="flex-1 grid md:grid-cols-4 gap-4">
                                             {/* Reward Type */}
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -232,6 +237,30 @@ const ManageRewards = () => {
                                                     />
                                                 </div>
                                             </div>
+
+                                            {/* Number of Winners */}
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                                    # of Winners
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={reward.numberOfWinners}
+                                                    onChange={(e) => updateReward(index, 'numberOfWinners', Math.max(1, parseInt(e.target.value) || 1))}
+                                                    min="1"
+                                                    max="100"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent"
+                                                />
+                                                <p className="text-xs text-gray-400 mt-1">e.g. 10 winners all get $10</p>
+                                            </div>
+
+                                            {/* Total for this tier */}
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-900 mb-2">Tier Total</label>
+                                                <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700">
+                                                    ${((parseFloat(reward.amount) || 0) * (parseInt(reward.numberOfWinners) || 1)).toLocaleString()}
+                                                </div>
+                                            </div>
                                         </div>
 
                                         {/* Remove Button */}
@@ -248,6 +277,7 @@ const ManageRewards = () => {
                                 </div>
                             ))}
                         </div>
+
                     </div>
 
                     {/* Info Box */}

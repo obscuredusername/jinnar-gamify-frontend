@@ -53,37 +53,68 @@ const UploadVideo = () => {
         }
     };
 
+    /**
+     * Validates a video file for duration and size before accepting it.
+     * Returns an error string if invalid, or null if the file is acceptable.
+     */
+    const validateVideoFile = (file) => new Promise((resolve) => {
+        // 1. Type check
+        if (!file.type.startsWith('video/')) {
+            resolve('Please upload a valid video file (MP4, MOV, etc.).');
+            return;
+        }
+        // 2. Size check (max 500 MB)
+        const MAX_SIZE_MB = 500;
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+            resolve(`File is too large. Maximum allowed size is ${MAX_SIZE_MB} MB.`);
+            return;
+        }
+        // 3. Duration check via a hidden video element
+        const url = URL.createObjectURL(file);
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => {
+            URL.revokeObjectURL(url);
+            const duration = video.duration;
+            if (duration > 180) { // 3 minutes
+                resolve(`Video is too long (${Math.floor(duration)}s). Maximum allowed duration is 3 minutes (180s).`);
+            } else if (duration < 5) { // 5 seconds minimum
+                resolve(`Video is too short (${Math.floor(duration)}s). Minimum duration is 5 seconds.`);
+            } else {
+                resolve(null); // valid!
+            }
+        };
+        video.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve(null); // allow if we cannot read metadata (let backend decide)
+        };
+        video.src = url;
+    });
+
+    const applyFile = async (file) => {
+        const error = await validateVideoFile(file);
+        if (error) {
+            toast.error(error);
+            return;
+        }
+        setUploadedFile(file);
+        if (!videoTitle) {
+            setVideoTitle(file.name.replace(/\.[^/.]+$/, ''));
+        }
+    };
+
     const handleDrop = (e) => {
         e.preventDefault();
         e.stopPropagation();
         setDragActive(false);
-
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const file = e.dataTransfer.files[0];
-            if (file.type.startsWith('video/')) {
-                setUploadedFile(file);
-                // Auto-generate title from filename if empty
-                if (!videoTitle) {
-                    setVideoTitle(file.name.replace(/\.[^/.]+$/, ''));
-                }
-            } else {
-                toast.warning('Please upload a video file');
-            }
+            applyFile(e.dataTransfer.files[0]);
         }
     };
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            if (file.type.startsWith('video/')) {
-                setUploadedFile(file);
-                // Auto-generate title from filename if empty
-                if (!videoTitle) {
-                    setVideoTitle(file.name.replace(/\.[^/.]+$/, ''));
-                }
-            } else {
-                alert('Please upload a video file');
-            }
+            applyFile(e.target.files[0]);
         }
     };
 

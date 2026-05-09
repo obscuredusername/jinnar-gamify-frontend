@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import { Button } from '../../components/ui';
 import {
@@ -7,7 +8,8 @@ import {
     NoSymbolIcon,
     ShieldCheckIcon,
     MagnifyingGlassIcon,
-    FunnelIcon
+    FunnelIcon,
+    DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 
@@ -177,6 +179,13 @@ const AdminUsers = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center justify-end gap-2">
+                                            <Link
+                                                to={`/admin/submissions?userId=${user._id}`}
+                                                className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                title="View User's Submissions"
+                                            >
+                                                <DocumentTextIcon className="w-5 h-5" />
+                                            </Link>
                                             {(user.verification?.status === 'pending' || user.verification?.status === 'none') && (
                                                 <>
                                                     <button

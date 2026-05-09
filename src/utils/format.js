@@ -56,13 +56,29 @@ export const formatDate = (date) => {
 };
 
 /**
- * Format currency (USD)
- * @param {number} amount - Amount to format
+ * Format a USD amount, optionally converting to another currency.
+ *
+ * Basic usage (backward-compatible):
+ *   formatCurrency(100)               => "$100"
+ *
+ * With CurrencyContext:
+ *   formatCurrency(100, 'TZS', 'TSh', 2580)  => "TSh258,000"
+ *
+ * @param {number} amount       - Amount in USD
+ * @param {string} [currencyCode='USD'] - ISO currency code
+ * @param {string} [symbol='$'] - Currency symbol
+ * @param {number} [rate=1]     - Conversion rate (1 USD = rate units)
  * @returns {string} Formatted currency string
  */
-export const formatCurrency = (amount) => {
-    if (amount === null || amount === undefined) return '$0';
-    return '$' + amount.toLocaleString();
+export const formatCurrency = (amount, currencyCode = 'USD', symbol = '$', rate = 1) => {
+    if (amount === null || amount === undefined) return `${symbol}0`;
+    const converted = amount * rate;
+    const decimals = currencyCode === 'USD' ? 2 : 0;
+    const formatted = converted.toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+    });
+    return `${symbol}${formatted}`;
 };
 
 /**
