@@ -220,6 +220,16 @@ const SignIn = () => {
                             Sign up now
                         </Link>
                     </p>
+
+                    {/* Admin Login Link */}
+                    <div className="mt-6 text-center">
+                        <Link
+                            to="/admin/login"
+                            className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            Admin Login
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

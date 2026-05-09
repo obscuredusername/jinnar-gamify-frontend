@@ -7,7 +7,7 @@ const Footer = () => {
     };
 
     // Hide footer on auth pages
-    const authPaths = ['/login', '/register', '/signin', '/signup', '/verify', '/forgot-password', '/reset-password'];
+    const authPaths = ['/login', '/register', '/signin', '/signup', '/verify', '/forgot-password', '/reset-password', '/admin/login'];
     if (authPaths.includes(location.pathname)) {
         return null;
     }
