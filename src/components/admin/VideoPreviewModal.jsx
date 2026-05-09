@@ -14,6 +14,7 @@ import toast from 'react-hot-toast';
  */
 const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
     const [reviewNotes, setReviewNotes] = useState('');
+    const [points, setPoints] = useState(submission?.points || 0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const overlayRef = useRef(null);
 
@@ -39,6 +40,7 @@ const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
             const result = await adminService.reviewSubmission(submission._id, {
                 status,
                 reviewNotes: reviewNotes.trim(),
+                points: Number(points) || 0
             });
             toast.success(status === 'approved' ? '✅ Submission approved!' : '❌ Submission rejected.');
             onAction?.(result.data);
@@ -155,12 +157,31 @@ const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
                     ))}
                 </div>
 
-                {/* Review Notes */}
+                {/* Review Notes & Points */}
                 {submission?.status === 'pending' && (
-                    <div className="px-6 pb-4">
-                        <label className="block text-sm font-medium mb-2" style={{ color: '#94a3b8' }}>
-                            Review Notes <span className="text-xs" style={{ color: '#475569' }}>(required for rejection)</span>
-                        </label>
+                    <div className="px-6 pb-4 space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-2" style={{ color: '#94a3b8' }}>
+                                Assign Points
+                            </label>
+                            <input
+                                type="number"
+                                value={points}
+                                onChange={e => setPoints(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+                                style={{
+                                    background: 'rgba(255,255,255,0.06)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    color: '#e2e8f0',
+                                }}
+                                onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
+                                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-2" style={{ color: '#94a3b8' }}>
+                                Review Notes <span className="text-xs" style={{ color: '#475569' }}>(required for rejection)</span>
+                            </label>
                         <textarea
                             value={reviewNotes}
                             onChange={e => setReviewNotes(e.target.value)}
@@ -175,6 +196,7 @@ const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
                             onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
                             onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                         />
+                        </div>
                     </div>
                 )}
 

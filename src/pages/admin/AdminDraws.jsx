@@ -219,6 +219,11 @@ const AdminDraws = () => {
 
                                     {/* Action Buttons */}
                                     <div className="pt-3 border-t border-gray-100 space-y-2">
+                                        <Link to={`/admin/submissions?drawId=${draw._id}`} className="block">
+                                            <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition-colors text-sm">
+                                                👀 View Submissions
+                                            </button>
+                                        </Link>
                                         <Link to={`/admin/draws/edit/${draw._id}`} className="block">
                                             <button className="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 px-4 rounded transition-colors text-sm">
                                                 ✏️ Edit Draw
@@ -229,7 +234,6 @@ const AdminDraws = () => {
                                                 🏆 Manage Rewards
                                             </button>
                                         </Link>
-
                                         {/* Lifecycle Actions */}
                                         {draw.status === 'active' && (
                                             <button

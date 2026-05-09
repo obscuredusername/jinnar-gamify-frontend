@@ -11,15 +11,16 @@ const AdminSubmissions = () => {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
     const [userFilter, setUserFilter] = useState('all');
+    const [drawFilter, setDrawFilter] = useState('all');
     const [selectedSubmission, setSelectedSubmission] = useState(null);
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const userIdParam = params.get('userId');
-        if (userIdParam) {
-            setUserFilter(userIdParam);
-        }
+        const drawIdParam = params.get('drawId');
+        if (userIdParam) setUserFilter(userIdParam);
+        if (drawIdParam) setDrawFilter(drawIdParam);
         loadSubmissions();
     }, [location.search]);
 
@@ -40,6 +41,11 @@ const AdminSubmissions = () => {
         return submissions.find(s => s.userId?._id === id)?.userId;
     }).filter(Boolean);
 
+    const uniqueDraws = Array.from(new Set(submissions.map(s => s.drawId?._id || s.drawId))).map(id => {
+        const sub = submissions.find(s => s.drawId?._id === id || s.drawId === id);
+        return typeof sub?.drawId === 'object' ? sub.drawId : { _id: sub?.drawId, title: `Draw ${sub?.drawId}` };
+    }).filter(d => d && d._id);
+
     const openPreviewModal = (submission) => {
         setSelectedSubmission(submission);
         setShowModal(true);
@@ -58,7 +64,10 @@ const AdminSubmissions = () => {
         const userMatch = userFilter === 'all' || 
                           sub.userId?._id === userFilter || 
                           sub.userId === userFilter;
-        return statusMatch && userMatch;
+        const drawMatch = drawFilter === 'all' || 
+                          sub.drawId?._id === drawFilter || 
+                          sub.drawId === drawFilter;
+        return statusMatch && userMatch && drawMatch;
     });
 
     const getStatusBadge = (status) => {
@@ -101,20 +110,37 @@ const AdminSubmissions = () => {
                             </button>
                         ))}
                     </div>
-                    <div className="flex items-center gap-3">
-                        <label className="text-sm font-medium text-gray-700">Filter by User:</label>
-                        <select
-                            value={userFilter}
-                            onChange={(e) => setUserFilter(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                        >
-                            <option value="all">All Users</option>
-                            {uniqueUsers.map(u => (
-                                <option key={u._id} value={u._id}>
-                                    {u.name || u.email || u._id}
-                                </option>
-                            ))}
-                        </select>
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700">User:</label>
+                            <select
+                                value={userFilter}
+                                onChange={(e) => setUserFilter(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            >
+                                <option value="all">All Users</option>
+                                {uniqueUsers.map(u => (
+                                    <option key={u._id} value={u._id}>
+                                        {u.name || u.email || u._id}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700">Draw:</label>
+                            <select
+                                value={drawFilter}
+                                onChange={(e) => setDrawFilter(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            >
+                                <option value="all">All Draws</option>
+                                {uniqueDraws.map(d => (
+                                    <option key={d._id} value={d._id}>
+                                        {d.title || d._id}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
