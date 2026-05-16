@@ -4,11 +4,13 @@ import { useSelector } from 'react-redux';
 import viralService from '../services/viralService';
 import { useToast } from '../contexts/ToastContext';
 import homeData from '../data/home'; // Keep for fallback data (rules, status indicators)
+import { useCurrency } from '../contexts/CurrencyContext';
 
 const Home = () => {
     const navigate = useNavigate();
     const toast = useToast();
     const { isAuthenticated } = useSelector((state) => state.user);
+    const { format } = useCurrency();
     // UI State
     const [activeTab, setActiveTab] = useState('weekly');
     const [uploadFile, setUploadFile] = useState(null);
@@ -376,7 +378,7 @@ const Home = () => {
                                             <div className="flex-1">
                                                 <h4 className="font-semibold text-gray-900 text-sm mb-1">{draw.title}</h4>
                                                 <p className="text-xs text-gray-600 mb-2">
-                                                    Theme: {draw.theme} | Prize Pool: ${draw.prizePool?.toLocaleString()}
+                                                    Theme: {draw.theme} | Prize Pool: {format(draw.prizePool || 10000)}
                                                 </p>
                                                 <Link to="/announcements">
                                                     <button className="bg-blue-800 hover:bg-blue-900 text-white text-xs font-semibold py-1.5 px-4 rounded transition-colors">
@@ -426,7 +428,7 @@ const Home = () => {
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
-                                                            <div className="font-bold text-sm text-gray-900">${mappedWinner.points.toLocaleString()}</div>
+                                                            <div className="font-bold text-sm text-gray-900">{format(mappedWinner.points)}</div>
                                                             <div className="text-xs text-gray-500">Prize Amount</div>
                                                         </div>
                                                     </div>

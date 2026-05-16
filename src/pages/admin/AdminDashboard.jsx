@@ -12,8 +12,10 @@ import {
     UserGroupIcon,
     PresentationChartLineIcon
 } from '@heroicons/react/24/outline';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const AdminDashboard = () => {
+    const { format } = useCurrency();
     const [stats, setStats] = useState({
         draws: 0,
         pendingSubmissions: 0,
@@ -115,7 +117,7 @@ const AdminDashboard = () => {
                     <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-[4rem] opacity-50"></div>
                         <p className="text-sm text-gray-400 font-bold uppercase tracking-wider mb-1">Financial Inflow</p>
-                        <h3 className="text-3xl font-black text-gray-900">${loading ? '...' : stats.totalRevenue.toLocaleString()}</h3>
+                        <h3 className="text-3xl font-black text-gray-900">{loading ? '...' : format(stats.totalRevenue)}</h3>
                         <div className="mt-4 flex items-center text-xs font-bold text-green-600 bg-green-50 w-fit px-2 py-1 rounded-full">
                             ↑ 12.5% this month
                         </div>

@@ -51,7 +51,7 @@ const UserDashboard = () => {
                 let rankData = { globalRank: '-', countryRank: '-' };
                 if (currentDraw) {
                     try {
-                        const rankRes = await viralService.getUserRank(currentDraw._id);
+                        const rankRes = await viralService.getMyRank(currentDraw._id);
                         if (rankRes.success) {
                             rankData = {
                                 globalRank: rankRes.data.globalRank || '-',

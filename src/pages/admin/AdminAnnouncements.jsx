@@ -92,7 +92,7 @@ const AdminAnnouncements = () => {
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-2xl font-bold" style={{ color: '#f1f5f9' }}>📢 Announcements</h1>
-                        <p className="text-sm mt-1" style={{ color: '#64748b' }}>
+                        <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>
                             Manage public announcements shown to all users.
                         </p>
                     </div>
@@ -117,7 +117,7 @@ const AdminAnnouncements = () => {
                     ) : announcements.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 gap-3">
                             <span className="text-5xl">📭</span>
-                            <p className="text-sm" style={{ color: '#475569' }}>No announcements yet. Create your first one!</p>
+                            <p className="text-sm" style={{ color: '#94a3b8' }}>No announcements yet. Create your first one!</p>
                         </div>
                     ) : (
                         <table className="w-full">
@@ -125,7 +125,7 @@ const AdminAnnouncements = () => {
                                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                                     {['Title', 'Category', 'Date', 'Actions'].map(h => (
                                         <th key={h} className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide"
-                                            style={{ color: '#475569' }}>
+                                            style={{ color: '#94a3b8' }}>
                                             {h}
                                         </th>
                                     ))}
@@ -140,7 +140,7 @@ const AdminAnnouncements = () => {
                                             className="transition-colors hover:bg-white hover:bg-opacity-5">
                                             <td className="px-6 py-4">
                                                 <p className="font-semibold text-sm" style={{ color: '#e2e8f0' }}>{a.title}</p>
-                                                <p className="text-xs mt-0.5 line-clamp-1" style={{ color: '#64748b' }}>{a.content}</p>
+                                                <p className="text-xs mt-0.5 line-clamp-1" style={{ color: '#94a3b8' }}>{a.content}</p>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className="px-2 py-1 rounded-full text-xs font-semibold"
@@ -204,7 +204,7 @@ const AdminAnnouncements = () => {
                                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                                     placeholder="Announcement title…"
                                     className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}
+                                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', colorScheme: 'dark' }}
                                 />
                             </div>
                             {/* Category + Date row */}
@@ -214,9 +214,9 @@ const AdminAnnouncements = () => {
                                     <select
                                         value={form.category}
                                         onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                                        className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                                        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
-                                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                        className="w-full px-4 py-3 rounded-xl text-sm outline-none bg-white text-gray-900 font-medium"
+                                        style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        {CATEGORIES.map(c => <option key={c} value={c} className="text-gray-900 bg-white">{c}</option>)}
                                     </select>
                                 </div>
                                 <div>
@@ -240,7 +240,7 @@ const AdminAnnouncements = () => {
                                     onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
                                     placeholder="Write your announcement content here…"
                                     className="w-full px-4 py-3 rounded-xl text-sm resize-none outline-none"
-                                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}
+                                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', colorScheme: 'dark' }}
                                 />
                             </div>
                         </div>

@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import challengeData from '../data/jinnarChallenge';
 import { faqData } from '../data/FAQ';
 import viralService from '../services/viralService';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 const JinnarChallenge = () => {
     // State for dynamic data
+    const { format } = useCurrency();
     const [activeDraw, setActiveDraw] = useState(null);
     const [leaderboardPreview, setLeaderboardPreview] = useState([]);
     const [loadingDraw, setLoadingDraw] = useState(true);
@@ -120,7 +122,7 @@ const JinnarChallenge = () => {
                             <li className="text-gray-700">• A focus topic or creative direction</li>
                             <li className="text-gray-700">• Official hashtags (e.g., {activeDraw?.hashtags?.join(' ') || '#JinnarViral'})</li>
                             <li className="text-gray-700">• Contest Closes: {activeDraw ? new Date(activeDraw.endDate).toLocaleDateString() : 'See details'}</li>
-                            <li className="text-gray-700">• Prize Pool: <span className="font-bold text-green-600">${activeDraw?.prizePool?.toLocaleString() || '10,000'}</span></li>
+                            <li className="text-gray-700">• Prize Pool: <span className="font-bold text-green-600">{format(activeDraw?.prizePool || 10000)}</span></li>
                         </ul>
 
                         <Link to="/upload">
@@ -293,7 +295,7 @@ const JinnarChallenge = () => {
                     </p>
 
                     <ul className="space-y-2 mb-6 ml-4 max-w-xl">
-                        <li className="text-gray-700">• Cash prize pool of {activeDraw?.prizePool ? `$${activeDraw.prizePool.toLocaleString()}` : '$10,000+'}</li>
+                        <li className="text-gray-700">• Cash prize pool of {activeDraw?.prizePool ? format(activeDraw.prizePool) : format(10000) + '+'}</li>
                         <li className="text-gray-700">• Official Jinnar merchandise</li>
                         <li className="text-gray-700">• Public recognition on our socials</li>
                     </ul>

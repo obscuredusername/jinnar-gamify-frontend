@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import viralService from '../../services/viralService';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const ManageRewards = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { format } = useCurrency();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
@@ -148,7 +150,7 @@ const ManageRewards = () => {
                         <div className="grid md:grid-cols-2 gap-4 text-sm">
                             <div>
                                 <span className="text-blue-200">Prize Pool:</span>
-                                <span className="ml-2 font-semibold">${drawInfo.prizePool?.toLocaleString()}</span>
+                                <span className="ml-2 font-semibold">{format(drawInfo.prizePool)}</span>
                             </div>
                             <div>
                                 <span className="text-blue-200">Status:</span>
@@ -195,7 +197,7 @@ const ManageRewards = () => {
                                     {/* Grouped Winner Badge */}
                                     {parseInt(reward.numberOfWinners) > 1 && (
                                         <div className="mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                                            🏅 Group: {reward.numberOfWinners} winners × ${reward.amount || 0} each = ${(parseInt(reward.numberOfWinners) * (parseFloat(reward.amount) || 0)).toLocaleString()} total
+                                            🏅 Group: {reward.numberOfWinners} winners × {format(reward.amount || 0)} each = {format(parseInt(reward.numberOfWinners) * (parseFloat(reward.amount) || 0))} total
                                         </div>
                                     )}
                                     <div className="flex items-start gap-4">
@@ -258,7 +260,7 @@ const ManageRewards = () => {
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-900 mb-2">Tier Total</label>
                                                 <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700">
-                                                    ${((parseFloat(reward.amount) || 0) * (parseInt(reward.numberOfWinners) || 1)).toLocaleString()}
+                                                    {format((parseFloat(reward.amount) || 0) * (parseInt(reward.numberOfWinners) || 1))}
                                                 </div>
                                             </div>
                                         </div>

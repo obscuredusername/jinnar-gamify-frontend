@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import viralService from '../services/viralService';
 import { useToast } from '../contexts/ToastContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 const UploadVideo = () => {
     const navigate = useNavigate();
     const toast = useToast();
+    const { format } = useCurrency();
 
     // UI State
     const [dragActive, setDragActive] = useState(false);
@@ -15,6 +17,8 @@ const UploadVideo = () => {
     const [videoDescription, setVideoDescription] = useState('');
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
+    const [liveLinkUrl, setLiveLinkUrl] = useState('');
+    const [platform, setPlatform] = useState('tiktok');
 
     // API State
     const [activeDraws, setActiveDraws] = useState([]);
@@ -121,7 +125,7 @@ const UploadVideo = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!uploadedFile || !selectedDraw || !agreedToTerms) {
+        if (!liveLinkUrl || !selectedDraw || !agreedToTerms || !videoTitle) {
             toast.warning('Please fill in all required fields');
             return;
         }
@@ -131,16 +135,19 @@ const UploadVideo = () => {
 
         try {
             // Upload video
-            const response = await viralService.uploadVideo(
-                uploadedFile,
-                selectedDraw,
-                videoTitle || uploadedFile.name
-            );
+            const response = await viralService.createSubmission({
+                drawId: selectedDraw,
+                title: videoTitle,
+                liveLinkUrl: liveLinkUrl,
+                platform: platform,
+                videoFile: uploadedFile || undefined
+            });
 
             if (response.success) {
                 toast.success('Video submitted successfully! It will be reviewed shortly.');
                 // Reset form
                 setUploadedFile(null);
+                setLiveLinkUrl('');
                 setVideoTitle('');
                 setVideoDescription('');
                 setAgreedToTerms(false);
@@ -247,7 +254,7 @@ const UploadVideo = () => {
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                         </svg>
-                                                        Prize: ${draw.prizePool?.toLocaleString() || '10,000'}
+                                                        Prize: {format(draw.prizePool || 10000)}
                                                     </span>
                                                 </div>
                                             </label>
@@ -259,87 +266,137 @@ const UploadVideo = () => {
                             {/* Show remaining steps ONLY if there are active draws */}
                             {activeDraws.length > 0 && (
                                 <>
-                                    {/* Step 2: Upload Video */}
+                                    {/* Step 2: Upload Video & Link */}
                                     <div className="bg-white rounded-xl shadow-md p-6">
                                         <div className="flex items-center gap-3 mb-4">
                                             <div className="w-8 h-8 bg-blue-800 text-white rounded-full flex items-center justify-center font-bold">
                                                 2
                                             </div>
-                                            <h2 className="text-xl font-bold text-gray-900">Upload Your Video</h2>
+                                            <h2 className="text-xl font-bold text-gray-900">Provide Video Link & Optional File</h2>
                                         </div>
 
-                                        {!uploadedFile ? (
-                                            <div
-                                                className={`border-4 border-dashed rounded-xl p-12 text-center transition-all ${dragActive
-                                                    ? 'border-blue-800 bg-blue-50'
-                                                    : 'border-gray-300 hover:border-blue-400 bg-gray-50'
-                                                    }`}
-                                                onDragEnter={handleDrag}
-                                                onDragLeave={handleDrag}
-                                                onDragOver={handleDrag}
-                                                onDrop={handleDrop}
-                                            >
-                                                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                    <svg className="w-8 h-8 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                                    </svg>
+                                        <div className="space-y-6">
+                                            {/* Link Inputs - Mandatory */}
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Platform *
+                                                    </label>
+                                                    <select
+                                                        value={platform}
+                                                        onChange={(e) => setPlatform(e.target.value)}
+                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                                                    >
+                                                        <option value="tiktok">TikTok</option>
+                                                        <option value="instagram">Instagram</option>
+                                                        <option value="youtube">YouTube</option>
+                                                        <option value="facebook">Facebook</option>
+                                                        <option value="other">Other</option>
+                                                    </select>
                                                 </div>
-                                                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                                                    Drag and drop your video here
-                                                </h3>
-                                                <p className="text-gray-600 mb-4">or</p>
-                                                <label className="inline-block px-6 py-3 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold cursor-pointer transition-colors">
-                                                    Browse Files
+                                                <div>
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Video URL *
+                                                    </label>
                                                     <input
-                                                        type="file"
-                                                        accept="video/*"
-                                                        onChange={handleFileChange}
-                                                        className="hidden"
+                                                        type="url"
+                                                        value={liveLinkUrl}
+                                                        onChange={(e) => setLiveLinkUrl(e.target.value)}
+                                                        placeholder="https://www.tiktok.com/@user/video/..."
+                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                                                     />
-                                                </label>
-                                                <p className="text-sm text-gray-500 mt-4">
-                                                    Supported: MP4, MOV, AVI • Max size: 500MB • Duration: 15s - 3min
-                                                </p>
+                                                </div>
                                             </div>
-                                        ) : (
-                                            <div className="border-2 border-green-500 bg-green-50 rounded-xl p-6">
-                                                <div className="flex items-center justify-between flex-wrap gap-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                            <div className="border-t border-gray-200 pt-6">
+                                                <label className="block text-sm font-semibold text-gray-700 mb-4">
+                                                    Original Video File (Optional)
+                                                </label>
+                                                {!uploadedFile ? (
+                                                    <div
+                                                        className={`border-4 border-dashed rounded-xl p-12 text-center transition-all ${dragActive
+                                                            ? 'border-blue-800 bg-blue-50'
+                                                            : 'border-gray-300 hover:border-blue-400 bg-gray-50'
+                                                            }`}
+                                                        onDragEnter={handleDrag}
+                                                        onDragLeave={handleDrag}
+                                                        onDragOver={handleDrag}
+                                                        onDrop={handleDrop}
+                                                    >
+                                                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                            <svg className="w-8 h-8 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                                             </svg>
                                                         </div>
-                                                        <div>
-                                                            <h3 className="font-bold text-gray-900">{uploadedFile.name}</h3>
-                                                            <p className="text-sm text-gray-600">
-                                                                {(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB
-                                                            </p>
-                                                        </div>
+                                                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                                                            Drag and drop your video here
+                                                        </h3>
+                                                        <p className="text-gray-600 mb-4">or</p>
+                                                        <label className="inline-block px-6 py-3 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold cursor-pointer transition-colors">
+                                                            Browse Files
+                                                            <input
+                                                                type="file"
+                                                                accept="video/*"
+                                                                onChange={handleFileChange}
+                                                                className="hidden"
+                                                            />
+                                                        </label>
+                                                        <p className="text-sm text-gray-500 mt-4">
+                                                            Supported: MP4, MOV, AVI • Max size: 500MB • Duration: 15s - 3min
+                                                        </p>
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setUploadedFile(null)}
-                                                        className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-                                                    >
-                                                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPreview(!showPreview)}
-                                                    className="mt-4 w-full py-2 bg-white border border-gray-300 rounded-lg font-medium hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                    </svg>
-                                                    {showPreview ? 'Hide Preview' : 'Preview Video'}
-                                                </button>
+                                                ) : (
+                                                    <div className="border-2 border-green-500 bg-green-50 rounded-xl p-6">
+                                                        <div className="flex items-center justify-between flex-wrap gap-4">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                                    </svg>
+                                                                </div>
+                                                                <div>
+                                                                    <h3 className="font-bold text-gray-900">{uploadedFile.name}</h3>
+                                                                    <p className="text-sm text-gray-600">
+                                                                        {(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setUploadedFile(null)}
+                                                                className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                                                            >
+                                                                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowPreview(!showPreview)}
+                                                            className="mt-4 w-full py-2 bg-white border border-gray-300 rounded-lg font-medium hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                            </svg>
+                                                            {showPreview ? 'Hide Preview' : 'Preview Video'}
+                                                        </button>
+                                                        {showPreview && (
+                                                            <div className="mt-4 rounded-lg overflow-hidden bg-black border border-gray-200">
+                                                                <video 
+                                                                    src={URL.createObjectURL(uploadedFile)} 
+                                                                    controls 
+                                                                    className="w-full max-h-80 object-contain"
+                                                                >
+                                                                    Your browser does not support the video tag.
+                                                                </video>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
 
                                     {/* Step 3: Video Details */}
@@ -442,13 +499,13 @@ const UploadVideo = () => {
                                     {/* Submit Button */}
                                     <button
                                         type="submit"
-                                        disabled={!uploadedFile || !selectedDraw || !agreedToTerms || uploading || !videoTitle}
+                                        disabled={!liveLinkUrl || !selectedDraw || !agreedToTerms || uploading || !videoTitle}
                                         className="w-full py-4 bg-blue-800 text-white rounded-xl font-bold text-lg hover:bg-blue-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                                     >
                                         {uploading
                                             ? 'Uploading... Please wait'
-                                            : !uploadedFile
-                                                ? 'Please Upload a Video'
+                                            : !liveLinkUrl
+                                                ? 'Please Provide a Video Link'
                                                 : !selectedDraw
                                                     ? 'Please Select a Draw'
                                                     : !videoTitle

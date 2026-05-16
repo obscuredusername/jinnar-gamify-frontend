@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import viralService from '../../services/viralService';
 import { useToast } from '../../contexts/ToastContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const AdminDraws = () => {
     const toast = useToast();
+    const { format } = useCurrency();
     const [draws, setDraws] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all'); // all, active, upcoming, completed
@@ -201,7 +203,7 @@ const AdminDraws = () => {
                                     <div className="space-y-2 text-sm">
                                         <div className="flex justify-between">
                                             <span className="text-gray-600">Prize Pool:</span>
-                                            <span className="font-bold text-gray-900">${draw.prizePool?.toLocaleString()}</span>
+                                            <span className="font-bold text-gray-900">{format(draw.prizePool)}</span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-gray-600">Start:</span>

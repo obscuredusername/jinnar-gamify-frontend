@@ -52,7 +52,9 @@ const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
         }
     };
 
-    const videoSrc = submission?.videoUrl ? `${baseUrl}${submission.videoUrl}` : null;
+    const videoSrc = submission?.videoUrl 
+        ? (submission.videoUrl.startsWith('http') ? submission.videoUrl : `${baseUrl}${submission.videoUrl}`) 
+        : null;
     const liveLink = submission?.liveLinkUrl || submission?.liveLink;
     const statusColor = {
         pending:  { bg: '#fef3c7', text: '#92400e', label: 'Pending Review' },
@@ -98,9 +100,9 @@ const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
                     </div>
                 </div>
 
-                {/* Video Player */}
-                <div className="px-6 py-4">
-                    {videoSrc ? (
+                {/* Content Viewer */}
+                <div className="px-6 py-4 flex flex-col gap-4">
+                    {videoSrc && (
                         <div className="rounded-xl overflow-hidden" style={{ background: '#000', aspectRatio: '16/9' }}>
                             <video
                                 src={videoSrc}
@@ -112,12 +114,14 @@ const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
                                 Your browser does not support the video tag.
                             </video>
                         </div>
-                    ) : liveLink ? (
-                        <div className="rounded-xl p-6 flex flex-col items-center gap-3 text-center"
+                    )}
+                    
+                    {liveLink ? (
+                        <div className="rounded-xl p-4 flex flex-col items-center gap-2 text-center"
                             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                            <span className="text-4xl">🔗</span>
+                            <span className="text-2xl">🔗</span>
                             <p className="text-sm font-medium" style={{ color: '#94a3b8' }}>
-                                This submission is a live social media link.
+                                This submission includes a live social media link.
                             </p>
                             <a
                                 href={liveLink.startsWith('http') ? liveLink : `https://${liveLink}`}
@@ -130,7 +134,7 @@ const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
                             </a>
                             <p className="text-xs break-all" style={{ color: '#475569' }}>{liveLink}</p>
                         </div>
-                    ) : (
+                    ) : !videoSrc && (
                         <div className="rounded-xl p-10 flex flex-col items-center gap-2"
                             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                             <span className="text-4xl">📭</span>

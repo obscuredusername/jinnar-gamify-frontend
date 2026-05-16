@@ -8,8 +8,10 @@ import {
     ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 const AdminFinances = () => {
+    const { format } = useCurrency();
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -100,7 +102,7 @@ const AdminFinances = () => {
                             </div>
                             <span className="text-gray-500 font-medium">Total Inflow</span>
                         </div>
-                        <h3 className="text-3xl font-bold text-gray-900">${totals.inflow.toLocaleString()}</h3>
+                        <h3 className="text-3xl font-bold text-gray-900">{format(totals.inflow)}</h3>
                     </div>
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                         <div className="flex items-center gap-4 mb-4">
@@ -109,7 +111,7 @@ const AdminFinances = () => {
                             </div>
                             <span className="text-gray-500 font-medium">Total Outflow</span>
                         </div>
-                        <h3 className="text-3xl font-bold text-gray-900">${totals.outflow.toLocaleString()}</h3>
+                        <h3 className="text-3xl font-bold text-gray-900">{format(totals.outflow)}</h3>
                     </div>
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
                         <div className="flex items-center gap-4 mb-4">
@@ -118,7 +120,7 @@ const AdminFinances = () => {
                             </div>
                             <span className="text-white/80 font-medium">Available Balance</span>
                         </div>
-                        <h3 className="text-3xl font-bold">${totals.balance.toLocaleString()}</h3>
+                        <h3 className="text-3xl font-bold">{format(totals.balance)}</h3>
                     </div>
                 </div>
 
@@ -175,7 +177,7 @@ const AdminFinances = () => {
                                             )}
                                         </td>
                                         <td className={`px-8 py-5 text-right font-bold ${log.type === 'inflow' ? 'text-green-600' : 'text-red-600'}`}>
-                                            {log.type === 'inflow' ? '+' : '-'}${log.amount.toLocaleString()}
+                                            {log.type === 'inflow' ? '+' : '-'}{format(log.amount)}
                                         </td>
                                         <td className="px-8 py-5">
                                             <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-mono">{log.reference}</span>
